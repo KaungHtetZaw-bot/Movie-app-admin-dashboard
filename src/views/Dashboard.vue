@@ -74,6 +74,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Timer, CircleCheck, Money } from '@element-plus/icons-vue'
+import http from '@/api/http'
 
 const router = useRouter()
 const metrics = ref({
@@ -82,6 +83,8 @@ const metrics = ref({
   completedPurchases: 189,
   vipRevenue: 3450,
 })
+
+onMounted(())
 
 const recentRequests = ref([
   { id: 101, userName: "John Doe", vipPlan: "Gold", status: "pending", createdAt: "2026-01-19" },
@@ -99,6 +102,25 @@ const metricCards = computed(() => [
 const getStatusType = (status) => {
   const map = { pending: 'warning', completed: 'success', rejected: 'danger' }
   return map[status] || 'info'
+}
+
+
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const [uRes, pRes, plRes] = await Promise.all([
+      http.get('/users'),
+      http.get('/purchases'),
+      http.get('/plans')
+    ])
+    users.value = uRes.data
+    purchases.value = pRes.data
+    plans.value = plRes.data
+  } catch (error) {
+    ElMessage.error("Failed to sync dashboard data")
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 <style scoped>

@@ -7,7 +7,7 @@
       </div>
       <div class="header-stats">
         <el-tag type="warning" effect="dark" round>
-          {{ pendingRequests.length }} Pending Tasks
+          {{ adminStore.pendingCount }} Pending Tasks
         </el-tag>
       </div>
     </div>
@@ -20,7 +20,7 @@
     </el-tabs>
 
     <el-card class="table-card" shadow="never">
-      <el-table :data="filteredPurchases" v-loading="loading" stripe style="width: 100%">
+      <el-table :data="filteredPurchases" v-loading="adminStore.isLoading" stripe style="width: 100%">
         <el-table-column label="Customer" min-width="200">
           <template #default="scope">
             <div class="user-cell">
@@ -44,8 +44,8 @@
             <el-image 
               v-if="scope.row.photo"
               class="receipt-preview"
-              :src="getImageUrl(scope.row.photo)" 
-              :preview-src-list="[getImageUrl(scope.row.photo)]"
+              :src="adminStore.getImage(scope.row.photo)" 
+              :preview-src-list="[adminStore.getImage(scope.row.photo)]"
               fit="cover"
               preview-teleported
             >
@@ -72,13 +72,13 @@
                 type="success" 
                 size="small" 
                 :icon="Check" 
-                @click="handleStatusChange(scope.row.id, 'approved')"
+                @click="adminStore.updatePurchaseStatus(scope.row.id, 'approved')"
               >Approve</el-button>
               <el-button 
                 type="danger" 
                 size="small" 
                 :icon="Close" 
-                @click="handleStatusChange(scope.row.id, 'rejected')"
+                @click="adminStore.updatePurchaseStatus(scope.row.id, 'rejected')"
               >Reject</el-button>
             </div>
             <div v-else class="processed-by">
@@ -93,84 +93,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
 import { Check, Close, Picture, UserFilled } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import http from '@/api/http'
+import { useAdminStore } from '@/store/admin'
+import { computed, onMounted, ref } from 'vue'
 
-const loading = ref(false)
-const activeTab = ref('pending') // Default to showing pending work
+const adminStore = useAdminStore()
+const activeTab = ref('pending')
 
-// Raw data from API
-const users = ref([])
-const purchases = ref([])
-const plans = ref([])
-
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const [uRes, pRes, plRes] = await Promise.all([
-      http.get('/users'),
-      http.get('/purchases'),
-      http.get('/plans')
-    ])
-    users.value = uRes.data
-    purchases.value = pRes.data
-    plans.value = plRes.data
-  } catch (error) {
-    ElMessage.error("Failed to sync dashboard data")
-  } finally {
-    loading.value = false
-  }
-}
-
-// The "Mix" logic to join IDs with Names
-const mixedData = computed(() => {
-  return purchases.value.map(purchase => {
-    const user = users.value.find(u => u.id === purchase.user_id)
-    const plan = plans.value.find(p => p.id === purchase.plan_id)
-    return {
-      ...purchase,
-      user_name: user ? user.name : 'Unknown User',
-      plan_name: plan ? plan.name : 'Unknown Plan'
-    }
-  })
-})
-
-// Filter data based on active tab
 const filteredPurchases = computed(() => {
-  if (activeTab.value === 'all') return mixedData.value
-  return mixedData.value.filter(p => p.status === activeTab.value)
+  if (activeTab.value === 'all') return adminStore.mixedPurchases
+  return adminStore.mixedPurchases.filter(p => p.status === activeTab.value)
 })
-
-const pendingRequests = computed(() => {
-  return purchases.value.filter(p => p.status === 'pending')
-})
-
-const getImageUrl = (path) => `http://127.0.0.1:8000/storage/purchases/${path}`
 
 const getStatusType = (status) => {
   const map = { pending: 'warning', approved: 'success', rejected: 'danger' }
   return map[status] || 'info'
 }
 
-const handleStatusChange = (id, newStatus) => {
-  ElMessageBox.confirm(
-    `Are you sure you want to set this request to ${newStatus}?`,
-    'Confirm Action',
-    { type: newStatus === 'approved' ? 'success' : 'error' }
-  ).then(async () => {
-    try {
-      await http.patch(`/purchases/${id}`, { status: newStatus })
-      ElMessage.success(`Request ${newStatus}`)
-      fetchData() // Refresh
-    } catch (error) {
-      ElMessage.error("Operation failed")
-    }
-  })
-}
-
-onMounted(fetchData)
+onMounted(() => {
+  adminStore.fetchAllData()
+})
 </script>
 
 <style lang="scss" scoped>

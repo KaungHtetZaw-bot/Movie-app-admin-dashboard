@@ -89,7 +89,7 @@ import { computed, onMounted, ref } from 'vue';
   })
 
   const getImageUrl = (path) => {
-    return `http://localhost:8000/storage/${path}`;
+    return `http://127.0.0.1:8000/storage/purchases/${path}`;
   }
 
   const getStatusType = (status) => {
