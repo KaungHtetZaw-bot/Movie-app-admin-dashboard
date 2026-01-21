@@ -1,0 +1,47 @@
+/* src/assets/main.scss */
+
+:root {
+  --primary-slate: #0f172a;
+  --secondary-slate: #64748b;
+  --premium-bg: #fcfcfd;
+  --transition-premium: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--premium-bg);
+  color: var(--primary-slate);
+}
+
+/* Make all headers use the premium Display Font */
+h1, h2, h3, h4, .logo-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Remove the "Cheap" blue focus outlines from Element Plus */
+*:focus {
+  outline: none !important;
+}
+
+/* Smooth out all Element Plus transitions globally */
+.el-aside, .el-container, .el-card, .el-menu {
+  transition-timing-function: var(--transition-premium) !important;
+}
+
+/* Custom Scrollbar for a minimalist look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+  &:hover { background: #cbd5e1; }
+}

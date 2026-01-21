@@ -1,53 +1,57 @@
 <template>
-  <div class="sidebar-container">
-    <div class="logo-wrapper">
-      <div class="logo-icon">M</div>
-      <span v-if="!adminStore.isSidebarCollapsed" class="logo-text">MovieAdmin</span>
+  <div class="sidebar-container" :class="{ 'is-collapsed': adminStore.isSidebarCollapsed }">
+    <div class="logo-section">
+      <div class="logo-box">
+        <div class="logo-icon">M</div>
+        <span v-if="!adminStore.isSidebarCollapsed" class="logo-text">MovieAdmin</span>
+      </div>
     </div>
 
-    <div class="sidebar-wrapper">
+    <div class="menu-area">
       <el-menu
-      router
-      :default-active="route.path"
-      class="modern-menu"
-      :collapse="adminStore.isSidebarCollapsed"
-    >
-      <el-menu-item index="/dashboard">
-        <el-icon><Monitor /></el-icon>
-        <span>Dashboard</span>
-      </el-menu-item>
+        router
+        :default-active="route.path"
+        class="premium-menu"
+        :collapse="adminStore.isSidebarCollapsed"
+        :collapse-transition="true"
+      >
+        <el-menu-item index="/dashboard">
+          <el-icon><Monitor /></el-icon>
+          <template #title>Dashboard</template>
+        </el-menu-item>
 
-      <el-menu-item index="/users">
-        <el-icon><User /></el-icon>
-        <span>User Management</span>
-      </el-menu-item>
+        <el-menu-item index="/users">
+          <el-icon><User /></el-icon>
+          <template #title>User Management</template>
+        </el-menu-item>
 
-      <el-menu-item index="/purchases">
-        <el-icon><ShoppingCart /></el-icon>
-        <span>Purchases</span>
-      </el-menu-item>
+        <el-menu-item index="/purchases">
+          <el-icon><ShoppingCart /></el-icon>
+          <template #title>Purchases</template>
+        </el-menu-item>
 
-      <el-menu-item index="/plans">
-        <el-icon><GoldMedal /></el-icon>
-        <span>Pricing Plans</span>
-      </el-menu-item>
+        <el-menu-item index="/plans">
+          <el-icon><GoldMedal /></el-icon>
+          <template #title>Pricing Plans</template>
+        </el-menu-item>
 
-      <el-menu-item index="/payments">
-        <el-icon><Wallet /></el-icon>
-        <span>Payment Gateways</span>
-      </el-menu-item>
+        <el-menu-item index="/payments">
+          <el-icon><Wallet /></el-icon>
+          <template #title>Payment Gateways</template>
+        </el-menu-item>
 
-      <div class="menu-divider"></div>
+        <div class="spacer"></div>
 
-      <el-menu-item @click="handleLogout" class="logout-item">
-        <el-icon><SwitchButton /></el-icon>
-        <span>Log Out</span>
-      </el-menu-item>
-    </el-menu>
+        <div class="footer-section">
+          <el-menu-item @click="handleLogout" class="logout-item">
+            <el-icon><SwitchButton /></el-icon>
+            <template #title>Sign Out</template>
+          </el-menu-item>
+        </div>
+      </el-menu>
     </div>
   </div>
 </template>
-
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -75,93 +79,138 @@ const handleLogout = () => {
 }
 </script>
 <style lang="scss" scoped>
+// Variables for a "Slate" Premium Look
+$bg-sidebar: #ffffff;
+$text-main: #0f172a;
+$text-muted: #64748b;
+$accent-dark: #1e293b;
+$ease-premium: cubic-bezier(0.25, 1, 0.5, 1);
+$sidebar-width: 260px;
+
 .sidebar-container {
-  height: 100%;
+  height: 100vh;
+  background-color: $bg-sidebar;
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+  position: fixed;
+  left: 0;
+  top: 0;
   display: flex;
   flex-direction: column;
-  background-color: #ffffff;
-  border-right: 1px solid #f0f0f0;
-  position: fixed;
+  transition: width 0.5s $ease-premium;
+  width: $sidebar-width;
+  z-index: 1001;
 
-  .logo-wrapper {
-    padding: 24px;
+  &.is-collapsed {
+    width: 80px;
+    .logo-section { padding: 24px 0; justify-content: center; }
+  }
+
+  .logo-section {
+    height: 80px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    
-    .logo-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #409eff, #3a8ee6);
-      color: white;
-      border-radius: 8px;
+    padding: 0 28px;
+    transition: all 0.5s $ease-premium;
+
+    .logo-box {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      box-shadow: 0 4px 10px rgba(64, 158, 255, 0.3);
-    }
+      gap: 14px;
 
-    .logo-text {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #1f2f3d;
-      letter-spacing: -0.5px;
+      .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: $accent-dark;
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.15);
+      }
+
+      .logo-text {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: $text-main;
+        letter-spacing: -0.5px;
+        white-space: nowrap;
+      }
     }
   }
 
-  .modern-menu {
+  .menu-area {
+    flex: 1;
+    padding: 0 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &::-webkit-scrollbar { width: 0; } // Hide scrollbar for clean look
+  }
+
+  .premium-menu {
     border-right: none;
-    padding-left: 12px;
-    width: 100%;
+    background: transparent;
 
     .el-menu-item {
-      height: 50px;
-      line-height: 50px;
+      height: 48px;
       margin-bottom: 4px;
-      border-radius: 8px 0 0 8px;
-      color: #606266;
+      border-radius: 12px;
+      color: $text-muted;
+      transition: all 0.4s $ease-premium;
+
+      .el-icon {
+        font-size: 20px;
+        transition: transform 0.4s $ease-premium;
+      }
 
       &:hover {
-        background-color: #f5f7fa;
-        color: #409eff;
+        background-color: #f8fafc;
+        color: $text-main;
+        .el-icon { transform: scale(1.1); }
       }
 
       &.is-active {
-        background-color: #ecf5ff;
-        color: #409eff;
+        background-color: #f1f5f9; // Very light slate
+        color: $text-main;
         font-weight: 600;
-        
-        &::before {
+
+        &::after { // Subtle indicator instead of the blue bar
           content: "";
           position: absolute;
-          left: -12px;
-          height: 20px;
-          width: 4px;
-          background: #409eff;
-          border-radius: 0 4px 4px 0;
+          right: 12px;
+          width: 5px;
+          height: 5px;
+          background: $accent-dark;
+          border-radius: 50%;
         }
       }
-
-      .el-icon {
-        font-size: 18px;
-        margin-right: 12px;
-      }
     }
+  }
 
-    .menu-divider {
-      height: 1px;
-      background: #f0f0f0;
-      margin: 20px 12px;
-    }
+  .spacer { flex: 1; }
 
+  .footer-section {
+    padding-bottom: 24px;
     .logout-item {
-      color: #f56c6c;
-      &:hover {
-        background-color: #fef0f0;
-        color: #f56c6c;
-      }
+      color: #ef4444;
+      &:hover { background-color: #fef2f2 !important; }
     }
+  }
+}
+
+.menu-title-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.premium-dot {
+  margin-left: 8px;
+  :deep(.el-badge__content) {
+    background-color: #10b981; // Emerald for "online/new" feel
   }
 }
 </style>
