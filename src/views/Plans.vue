@@ -34,9 +34,9 @@
 
         <el-table-column label="Duration" min-width="150">
           <template #default="scope">
-            <el-tag :type="getDurationTag(scope.row.month)" effect="light" round>
-              <el-icon class="mr-4"><Calendar /></el-icon>
-              {{ scope.row.month }} {{ scope.row.month > 1 ? 'Months' : 'Month' }}
+            <el-tag :type="getDurationTag(scope.row.month)" effect="light" round class="duration-tag">
+              <el-icon><Calendar /></el-icon>
+              <span class="ml-4">{{ scope.row.month }} {{ scope.row.month > 1 ? 'Months' : 'Month' }}</span>
             </el-tag>
           </template>
         </el-table-column>
@@ -97,7 +97,6 @@ import { Plus, Edit, Delete, GoldMedal, Calendar } from '@element-plus/icons-vue
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/api/http'
 
-// ... same state and methods as before ...
 const plans = ref([])
 const loading = ref(false)
 const submitting = ref(false)
@@ -172,7 +171,7 @@ onMounted(fetchPlans)
 </script>
 <style lang="scss" scoped>
 .plans-wrapper {
-  padding: 32px;
+  padding: 24px 24px 24px 5px;
   background-color: #f8fafc;
   min-height: calc(100vh - 64px);
 
@@ -242,8 +241,13 @@ onMounted(fetchPlans)
       margin-left: 4px;
     }
   }
-
-  .mr-4 { margin-right: 4px; }
+  .duration-tag :deep(.el-tag__content) {
+    display: flex;
+    align-items: center;
+  }
+  .ml-4 {
+    margin-left: 4px;
+  }
   .px-24 { padding-left: 24px; padding-right: 24px; }
 }
 </style>

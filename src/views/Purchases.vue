@@ -117,7 +117,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .purchase-wrapper {
-  padding: 30px;
+  padding: 24px 24px 24px 5px;
   background-color: #f8fafc;
   min-height: 100vh;
 

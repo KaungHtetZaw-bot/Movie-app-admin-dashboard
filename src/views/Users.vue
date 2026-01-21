@@ -130,7 +130,7 @@ onMounted(fetchData);
 
 <style lang="scss" scoped>
 .users-wrapper {
-  padding: 32px;
+  padding: 24px 24px 24px 5px;
   background-color: #f8fafc;
   min-height: 100vh;
 

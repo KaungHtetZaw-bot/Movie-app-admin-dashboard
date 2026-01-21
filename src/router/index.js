@@ -39,6 +39,12 @@ const routes = [
         component: () => import('@/views/Purchases.vue'),
         meta: { title: 'Purchases' }
       },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('@/views/Profile.vue'),
+        meta: { title: 'Profile' }
+      },
     ]
   },
   {

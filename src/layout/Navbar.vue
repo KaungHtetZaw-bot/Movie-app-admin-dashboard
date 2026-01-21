@@ -1,7 +1,11 @@
 <template>
   <div class="navbar-container">
     <div class="left-section">
-      <el-breadcrumb separator="/">
+      <div class="toggle-icon" @click="adminStore.toggleSidebar">
+        <el-icon v-if="adminStore.isSidebarCollapsed"><Expand /></el-icon>
+        <el-icon v-else><Fold /></el-icon>
+      </div>
+      <el-breadcrumb separator="/" class="ml-15">
         <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
         <el-breadcrumb-item>{{ currentRouteName }}</el-breadcrumb-item>
       </el-breadcrumb>
@@ -23,7 +27,7 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item :icon="User">My Profile</el-dropdown-item>
+            <el-dropdown-item :icon="User" @click="router.push('/profile')">My Profile</el-dropdown-item>
             <el-dropdown-item :icon="Setting">Settings</el-dropdown-item>
             <el-dropdown-item divided :icon="SwitchButton" @click="handleLogout">
               Logout
@@ -38,11 +42,13 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Bell, ArrowDown, User, Setting, SwitchButton } from '@element-plus/icons-vue'
+import { Bell, ArrowDown, User, Setting, SwitchButton,Fold,Expand } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useAdminStore } from '@/store/admin'
 
 const route = useRoute()
 const router = useRouter()
+const adminStore = useAdminStore()
 
 // Dynamically get the page name from the router meta
 const currentRouteName = computed(() => route.meta.title || 'Dashboard')
@@ -67,6 +73,19 @@ const handleLogout = () => {
   .left-section {
     display: flex;
     align-items: center;
+
+    .toggle-icon {
+      font-size: 20px;
+      cursor: pointer;
+      color: #606266;
+      display: flex;
+      align-items: center;
+      &:hover { color: #409eff; }
+    }
+
+    .ml-15 { 
+      margin-left: 15px; 
+    }
   }
 
   .right-section {

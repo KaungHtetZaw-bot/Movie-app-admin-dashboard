@@ -151,7 +151,7 @@ onMounted(fetchPayments)
 
 <style lang="scss" scoped>
 .payment-wrapper {
-  padding: 32px;
+  padding: 24px 24px 24px 5px;
   background-color: #f8fafc;
   min-height: 100vh;
 

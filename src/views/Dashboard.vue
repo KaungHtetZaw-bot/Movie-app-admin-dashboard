@@ -101,28 +101,9 @@ const getStatusType = (status) => {
   const map = { pending: 'warning', completed: 'success', rejected: 'danger' }
   return map[status] || 'info'
 }
-
-
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const [uRes, pRes, plRes] = await Promise.all([
-      http.get('/users'),
-      http.get('/purchases'),
-      http.get('/plans')
-    ])
-    users.value = uRes.data
-    purchases.value = pRes.data
-    plans.value = plRes.data
-  } catch (error) {
-    ElMessage.error("Failed to sync dashboard data")
-  } finally {
-    loading.value = false
-  }
-}
 </script>
 <style scoped>
-.dashboard-container { padding: 24px; }
+.dashboard-container { padding: 24px 24px 24px 5px; }
 
 .page-title { margin-bottom: 24px; }
 .page-title h2 { margin: 0; font-size: 24px; color: #1a1a1a; }

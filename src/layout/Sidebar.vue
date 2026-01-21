@@ -2,14 +2,15 @@
   <div class="sidebar-container">
     <div class="logo-wrapper">
       <div class="logo-icon">M</div>
-      <span class="logo-text">MovieAdmin</span>
+      <span v-if="!adminStore.isSidebarCollapsed" class="logo-text">MovieAdmin</span>
     </div>
 
-    <el-menu
+    <div class="sidebar-wrapper">
+      <el-menu
       router
       :default-active="route.path"
       class="modern-menu"
-      :collapse="false"
+      :collapse="adminStore.isSidebarCollapsed"
     >
       <el-menu-item index="/dashboard">
         <el-icon><Monitor /></el-icon>
@@ -43,6 +44,7 @@
         <span>Log Out</span>
       </el-menu-item>
     </el-menu>
+    </div>
   </div>
 </template>
 
@@ -53,9 +55,11 @@ import {
   Monitor, User, ShoppingCart, 
   GoldMedal, Wallet, SwitchButton 
 } from '@element-plus/icons-vue'
+import { useAdminStore } from '@/store/admin'
 
 const route = useRoute()
 const router = useRouter()
+const adminStore = useAdminStore()
 
 const handleLogout = () => {
   ElMessageBox.confirm('Are you sure you want to log out?', 'Logout', {
@@ -108,13 +112,14 @@ const handleLogout = () => {
 
   .modern-menu {
     border-right: none;
-    padding: 0 12px;
+    padding-left: 12px;
+    width: 100%;
 
     .el-menu-item {
       height: 50px;
       line-height: 50px;
       margin-bottom: 4px;
-      border-radius: 8px;
+      border-radius: 8px 0 0 8px;
       color: #606266;
 
       &:hover {

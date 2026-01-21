@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus'
 
 export const useAdminStore = defineStore('admin', {
   state: () => ({
+    isSidebarCollapsed: false,
     users: [],
     plans: [],
     purchases: [],
@@ -40,6 +41,10 @@ export const useAdminStore = defineStore('admin', {
   },
 
   actions: {
+    toggleSidebar() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed
+      console.log(this.isSidebarCollapsed)
+    },
     // Fetch everything at once (Modern "Eager Loading")
     async fetchAllData() {
       this.isLoading = true
