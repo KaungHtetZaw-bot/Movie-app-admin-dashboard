@@ -6,7 +6,7 @@
         <p>Verify and approve user subscription payments</p>
       </div>
       <div class="header-stats">
-        <el-tag type="warning" effect="dark" round>
+        <el-tag type="warning" effect="dark" round @click="activeTab = 'pending'" style="cursor: pointer;">
           {{ adminStore.pendingCount }} Pending Tasks
         </el-tag>
       </div>
@@ -98,7 +98,7 @@ import { useAdminStore } from '@/store/admin'
 import { computed, onMounted, ref } from 'vue'
 
 const adminStore = useAdminStore()
-const activeTab = ref('pending')
+const activeTab = ref('all')
 
 const filteredPurchases = computed(() => {
   if (activeTab.value === 'all') return adminStore.mixedPurchases

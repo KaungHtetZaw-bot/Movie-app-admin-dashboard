@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-container">
+  <div class="dashboard-container" v-loading="adminStore.isLoading">
     <div class="page-title">
       <h2>System Overview</h2>
       <p>Real-time analytics for your movie platform</p>
@@ -7,7 +7,7 @@
 
     <el-row :gutter="20" class="mb-24">
       <el-col :xs="12" :sm="12" :md="6" v-for="card in metricCards" :key="card.title">
-        <el-card shadow="hover" class="metric-card">
+        <el-card shadow="hover" class="metric-card" @click="router.push(card.route)">
           <div class="card-body">
             <div class="icon-box" :style="{ backgroundColor: card.color + '20', color: card.color }">
               <el-icon><component :is="card.icon" /></el-icon>
@@ -15,7 +15,7 @@
             <div class="stat-info">
               <span class="stat-label">{{ card.title }}</span>
               <div class="stat-value">
-                <span v-if="card.isCurrency">$</span>{{ card.value }}
+                {{ card.value }}<span v-if="card.isCurrency">Ks</span>
               </div>
             </div>
           </div>
@@ -75,16 +75,14 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Timer, CircleCheck, Money } from '@element-plus/icons-vue'
 import http from '@/api/http'
+import { useAdminStore } from '@/store/admin'
 
 const router = useRouter()
-const metrics = ref({
-  totalUsers: 254,
-  pendingPurchases: 12,
-  completedPurchases: 189,
-  vipRevenue: 3450,
-})
+const adminStore = useAdminStore()
 
-onMounted(())
+onMounted(()=>{
+     adminStore.fetchAllData()
+})
 
 const recentRequests = ref([
   { id: 101, userName: "John Doe", vipPlan: "Gold", status: "pending", createdAt: "2026-01-19" },
@@ -93,10 +91,10 @@ const recentRequests = ref([
 ])
 
 const metricCards = computed(() => [
-  { title: 'Total Users', value: metrics.value.totalUsers, icon: User, color: '#409EFF' },
-  { title: 'Pending', value: metrics.value.pendingPurchases, icon: Timer, color: '#E6A23C' },
-  { title: 'Completed', value: metrics.value.completedPurchases, icon: CircleCheck, color: '#67C23A' },
-  { title: 'Revenue', value: metrics.value.vipRevenue, icon: Money, color: '#F56C6C', isCurrency: true },
+  { title: 'Total Users', value: adminStore.users.length, icon: User, color: '#409EFF',route: '/users' },
+  { title: 'Pending', value: adminStore.pendingCount, icon: Timer, color: '#E6A23C',route: '/plans' },
+  { title: 'Completed', value: adminStore.successCount, icon: CircleCheck, color: '#67C23A',route: '/plans' },
+  { title: 'Revenue', value: adminStore.totalRevenue, icon: Money, color: '#F56C6C', isCurrency: true ,route: '/dashboard'},
 ])
 
 const getStatusType = (status) => {

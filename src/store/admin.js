@@ -7,6 +7,7 @@ export const useAdminStore = defineStore('admin', {
     users: [],
     plans: [],
     purchases: [],
+
     isLoading: false,
     baseUrl: 'http://127.0.0.1:8000/storage/purchases/'
   }),
@@ -26,7 +27,16 @@ export const useAdminStore = defineStore('admin', {
         }
       })
     },
-    pendingCount: (state) => state.purchases.filter(p => p.status === 'pending').length
+    totalRevenue: (state) => {
+      return state.purchases
+        .filter(p => p.status === 'approved')
+        .reduce((sum, p) => {
+          const plan = state.plans.find(pl => pl.id === p.plan_id)
+          return sum + (plan ? Number(plan.amount) : 0)
+        }, 0)
+    },
+    pendingCount: (state) => state.purchases.filter(p => p.status === 'pending').length,
+    successCount: (state) => state.purchases.filter(p => p.status === 'approved').length
   },
 
   actions: {

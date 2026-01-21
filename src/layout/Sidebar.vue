@@ -77,6 +77,7 @@ const handleLogout = () => {
   flex-direction: column;
   background-color: #ffffff;
   border-right: 1px solid #f0f0f0;
+  position: fixed;
 
   .logo-wrapper {
     padding: 24px;
