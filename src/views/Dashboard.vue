@@ -1,12 +1,52 @@
+<script setup>
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { User, Timer, CircleCheck, Money, Download, Top } from '@element-plus/icons-vue'
+import { useAdminStore } from '@/store/admin'
+
+const router = useRouter()
+const adminStore = useAdminStore()
+
+// Helper for formatting large numbers
+const formatNumber = (num) => {
+  if (num === undefined || num === null) return '0'
+  return new Intl.NumberFormat().format(num)
+}
+
+// Helper for human-readable dates (missing in previous snippet)
+const formatDate = (dateString) => {
+  if (!dateString) return 'Recent'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const metricCards = computed(() => [
+  { title: 'Total Users', value: adminStore.users.length, icon: User, color: '#6366f1', route: '/users' },
+  { title: 'Pending Tasks', value: adminStore.pendingCount, icon: Timer, color: '#f59e0b', route: '/purchases' },
+  { title: 'Successful', value: adminStore.successCount, icon: CircleCheck, color: '#10b981', route: '/purchases' },
+  { title: 'Gross Revenue', value: adminStore.totalRevenue, icon: Money, color: '#0f172a', isCurrency: true, route: '/dashboard' },
+])
+
+onMounted(async () => {
+  await adminStore.fetchAllData()
+})
+</script>
+
 <template>
   <div class="dashboard-wrapper">
     <header class="dashboard-header">
       <div class="header-content">
+        <span class="system-badge">System Live</span>
         <h1>Analytics Overview</h1>
         <p>Insights and system activity for the movie platform.</p>
       </div>
       <div class="header-actions">
-        <el-button class="premium-btn">
+        <el-button class="premium-btn" @click="adminStore.fetchAllData()">
           <el-icon class="mr-8"><Download /></el-icon> Generate Report
         </el-button>
       </div>
@@ -15,19 +55,22 @@
     <el-row :gutter="28" class="stats-grid">
       <el-col :xs="24" :sm="12" :md="6" v-for="card in metricCards" :key="card.title">
         <div class="glass-card" @click="router.push(card.route)">
-          <div class="card-top">
-            <span class="card-label">{{ card.title }}</span>
-            <div class="mini-icon" :style="{ color: card.color }">
-              <el-icon><component :is="card.icon" /></el-icon>
+          <div class="card-glow" :style="{ background: card.color }"></div>
+          <div class="card-content">
+            <div class="card-top">
+              <span class="mini-icon" :style="{ color: card.color }">
+                <el-icon><component :is="card.icon" /></el-icon>
+              </span>
+              <span class="card-label" style="margin-left: 10px;">{{ card.title }}</span>
             </div>
-          </div>
-          <div class="card-bottom">
-            <h2 class="card-value">
-              <template v-if="card.isCurrency"><small>Ks</small></template>
-              {{ formatNumber(card.value) }}
-            </h2>
-            <div class="card-trend positive">
-              <el-icon><Top /></el-icon> 12% vs last month
+            <div class="card-bottom">
+              <h2 class="card-value">
+                <template v-if="card.isCurrency"><small>Ks</small></template>
+                {{ formatNumber(card.value) }}
+              </h2>
+              <div class="card-trend positive">
+                <el-icon><Top /></el-icon> 12% growth
+              </div>
             </div>
           </div>
         </div>
@@ -36,72 +79,58 @@
 
     <div class="table-section">
       <div class="section-title">
-        <h3>Recent Subscriptions</h3>
-        <el-button link @click="router.push('/purchases')">View All Activity</el-button>
+        <div class="title-left">
+          <h3>Recent Subscriptions</h3>
+          <span class="live-indicator">
+            <span class="ping"></span> Real-time
+          </span>
+        </div>
+        <el-button link class="view-all-link" @click="router.push('/purchases')">
+          View All Activity <el-icon class="ml-4"><ArrowRight /></el-icon>
+        </el-button>
       </div>
       
-      <el-card class="frameless-card">
-        <el-table :data="recentRequests" style="width: 100%" class="premium-table">
-          <el-table-column label="Subscriber" min-width="200">
+      <el-card class="frameless-card" shadow="never">
+        <el-table :data="adminStore.mixedPurchases.slice(0, 5)" class="premium-table">
+          <el-table-column label="Subscriber" min-width="220">
             <template #default="scope">
               <div class="user-info">
-                <el-avatar :size="32" :src="`https://ui-avatars.com/api/?name=${scope.row.userName}&background=f1f5f9&color=64748b`" />
+                <el-avatar :size="34" :src="`https://ui-avatars.com/api/?name=${scope.row.user_name}&background=f1f5f9&color=64748b&bold=true`" />
                 <div class="user-text">
-                  <span class="name">{{ scope.row.userName }}</span>
-                  <span class="id">ID: #{{ scope.row.id }}</span>
+                  <span class="name">{{ scope.row.user_name }}</span>
+                  <span class="id">UID: #{{ scope.row.user_id }}</span>
                 </div>
               </div>
             </template>
           </el-table-column>
           
-          <el-table-column label="Plan Type">
+          <el-table-column label="Plan Type" min-width="150">
             <template #default="scope">
-              <span class="plan-pill" :class="scope.row.vipPlan.toLowerCase()">
-                {{ scope.row.vipPlan }}
+              <span class="plan-pill" :class="scope.row.plan_name?.toLowerCase()">
+                {{ scope.row.plan_name }}
               </span>
             </template>
           </el-table-column>
 
-          <el-table-column label="Status">
+          <el-table-column label="Status" width="140">
             <template #default="scope">
-              <div class="status-indicator" :class="scope.row.status">
+              <div class="status-indicator" :class="scope.row.status?.toLowerCase()">
                 <span class="dot"></span>
-                {{ scope.row.status }}
+                <span class="status-label">{{ scope.row.status }}</span>
               </div>
             </template>
           </el-table-column>
 
-          <el-table-column prop="createdAt" label="Time" align="right" />
+          <el-table-column label="Activity Time" align="right" min-width="160">
+            <template #default="scope">
+              <span class="timestamp">{{ formatDate(scope.row.created_at) }}</span>
+            </template>
+          </el-table-column>
         </el-table>
       </el-card>
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { User, Timer, CircleCheck, Money, Download, Top } from '@element-plus/icons-vue'
-import { useAdminStore } from '@/store/admin'
-
-const router = useRouter()
-const adminStore = useAdminStore()
-
-const formatNumber = (num) => new Intl.NumberFormat().format(num)
-
-const metricCards = computed(() => [
-  { title: 'Total Users', value: adminStore.users.length, icon: User, color: '#0f172a', route: '/users' },
-  { title: 'Pending Tasks', value: adminStore.pendingCount, icon: Timer, color: '#f59e0b', route: '/purchases' },
-  { title: 'Successful', value: adminStore.successCount, icon: CircleCheck, color: '#10b981', route: '/purchases' },
-  { title: 'Gross Revenue', value: adminStore.totalRevenue, icon: Money, color: '#0f172a', isCurrency: true, route: '/dashboard' },
-])
-
-const recentRequests = [
-  { id: 101, userName: "John Doe", vipPlan: "Gold", status: "pending", createdAt: "2 hours ago" },
-  { id: 102, userName: "Jane Smith", vipPlan: "Silver", status: "completed", createdAt: "5 hours ago" },
-  { id: 103, userName: "Mike Ross", vipPlan: "Gold", status: "completed", createdAt: "Yesterday" },
-]
-</script>
 
 <style lang="scss" scoped>
 $text-main: #0f172a;
@@ -133,47 +162,75 @@ $ease-premium: cubic-bezier(0.25, 1, 0.5, 1);
   &:hover { background: #f8fafc; border-color: $text-main; color: $text-main; }
 }
 
+.system-badge {
+  background: #ecfdf5;
+  color: #059669;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 30px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: inline-block;
+}
+
 .glass-card {
-  background: white;
+  position: relative;
+  overflow: hidden; // Clips the inner glow
+  background: #ffffff;
   padding: 24px;
-  border-radius: 20px;
-  border: 1px solid rgba(0,0,0,0.03);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-  cursor: pointer;
-  transition: all 0.5s $ease-premium;
+  border-radius: 24px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .card-glow {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 100px;
+    height: 100px;
+    filter: blur(40px);
+    opacity: 0.05;
+    transition: all 0.4s ease;
+  }
 
   &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.06);
-    border-color: rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+    border-color: #cbd5e1;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+    .card-glow { opacity: 0.15; transform: scale(2); }
   }
+}
 
-  .card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-    
-    .card-label { font-size: 14px; font-weight: 600; color: $text-muted; text-transform: uppercase; letter-spacing: 0.5px; }
-    .mini-icon { font-size: 20px; opacity: 0.8; }
-  }
-
-  .card-value {
-    font-size: 28px;
-    font-weight: 800;
-    color: $text-main;
-    margin: 0;
-    small { font-size: 14px; color: $text-muted; font-weight: 400; }
-  }
-
-  .card-trend {
-    font-size: 12px;
-    margin-top: 8px;
+.title-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  
+  .live-indicator {
     display: flex;
     align-items: center;
-    gap: 4px;
-    &.positive { color: #10b981; font-weight: 600; }
+    gap: 6px;
+    font-size: 12px;
+    color: $text-muted;
+    font-weight: 600;
+    
+    .ping {
+      width: 8px; height: 8px; border-radius: 50%; background: #10b981;
+      animation: indicator-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
   }
+}
+
+@keyframes indicator-ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+.view-all-link {
+  font-weight: 700;
+  color: #6366f1;
+  &:hover { color: #4338ca; }
 }
 
 .table-section {
@@ -187,48 +244,93 @@ $ease-premium: cubic-bezier(0.25, 1, 0.5, 1);
   }
 }
 
-.frameless-card {
-  border: none;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-}
+$slate-900: #0f172a;
+$slate-500: #64748b;
+$slate-100: #f1f5f9;
 
-// User Cell Styling
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  .user-text {
-    display: flex;
-    flex-direction: column;
-    .name { font-weight: 600; color: $text-main; font-size: 14px; }
-    .id { font-size: 11px; color: $text-muted; }
+.frameless-card {
+  border: none !important;
+  background: transparent !important;
+  
+  :deep(.el-card__body) {
+    padding: 0; // Let the table breathe
   }
 }
 
-// Status Indicators
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: capitalize;
-  .dot { width: 6px; height: 6px; border-radius: 50%; }
-  
-  &.pending { color: #f59e0b; .dot { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; } }
-  &.completed { color: #10b981; .dot { background: #10b981; box-shadow: 0 0 8px #10b981; } }
-}
+:deep(.premium-table) {
+  --el-table-border-color: transparent;
+  --el-table-header-bg-color: transparent;
+  background: transparent !important;
 
-.plan-pill {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  background: #f1f5f9;
-  color: #475569;
-  &.gold { background: #fef3c7; color: #92400e; }
-}
+  // Header Styling
+  .el-table__header th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: $slate-500;
+    font-weight: 700;
+    border-bottom: 1px solid $slate-100;
+  }
 
-.mr-8 { margin-right: 8px; }
+  // Row Styling
+  .el-table__row {
+    transition: all 0.2s ease;
+    &:hover {
+      background-color: #f8fafc !important;
+      td { background-color: transparent !important; }
+    }
+  }
+
+  // User Info Cell
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    .user-text {
+      display: flex;
+      flex-direction: column;
+      .name { font-weight: 700; color: $slate-900; font-size: 14px; }
+      .id { font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace; }
+    }
+  }
+
+  // Plan Pill
+  .plan-pill {
+    font-size: 12px;
+    font-weight: 700;
+    color: $slate-500;
+    background: #f8fafc;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+  }
+
+  // Status Indicator
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+
+    &.pending { color: #f59e0b; .dot { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; } }
+    &.approved, &.success { color: #10b981; .dot { background: #10b981; box-shadow: 0 0 8px #10b981; } }
+    &.rejected, &.failed { color: #ef4444; .dot { background: #ef4444; box-shadow: 0 0 8px #ef4444; } }
+  }
+
+  .timestamp {
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+}
 </style>

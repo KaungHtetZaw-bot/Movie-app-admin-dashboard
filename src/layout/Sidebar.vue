@@ -17,7 +17,7 @@
       >
         <el-menu-item index="/dashboard">
           <el-icon><Monitor /></el-icon>
-          <template #title>Dashboard</template>
+          <template #title>Overview</template>
         </el-menu-item>
 
         <el-menu-item index="/users">
@@ -32,7 +32,7 @@
 
         <el-menu-item index="/plans">
           <el-icon><GoldMedal /></el-icon>
-          <template #title>Pricing Plans</template>
+          <template #title>Subscription Plans</template>
         </el-menu-item>
 
         <el-menu-item index="/payments">

@@ -59,7 +59,7 @@ const router = useRouter()
 const adminStore = useAdminStore()
 
 // Dynamically get the page name from the router meta
-const currentRouteName = computed(() => route.meta.title || 'Dashboard')
+const currentRouteName = computed(() => route.meta.title || 'Overview')
 
 const handleLogout = () => {
   localStorage.removeItem('token')
