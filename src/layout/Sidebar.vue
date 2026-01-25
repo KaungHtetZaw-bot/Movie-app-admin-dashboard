@@ -37,7 +37,7 @@
 
         <el-menu-item index="/payments">
           <el-icon><Wallet /></el-icon>
-          <template #title>Payment Gateways</template>
+          <template #title>Payment Accounts</template>
         </el-menu-item>
 
         <div class="spacer"></div>

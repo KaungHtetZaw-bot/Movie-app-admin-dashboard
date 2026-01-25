@@ -1,12 +1,16 @@
 <template>
   <div class="login-wrapper">
-    <div class="bg-decoration"></div>
+    <div class="bg-mesh"></div>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
     
-    <el-card class="modern-login-card" shadow="always">
+    <el-card class="premium-login-card" shadow="never">
       <div class="login-brand">
-        <div class="brand-logo">M</div>
-        <h1>Movie Admin</h1>
-        <p>Sign in to your dashboard</p>
+        <div class="brand-logo">
+          <el-icon><VideoCameraFilled /></el-icon>
+        </div>
+        <h1>Cinema Admin</h1>
+        <p>Enter your credentials to manage the platform</p>
       </div>
 
       <el-form
@@ -20,9 +24,8 @@
         <el-form-item label="Email Address" prop="email">
           <el-input 
             v-model="loginForm.email" 
-            placeholder="name@company.com"
+            placeholder="admin@cinema.com"
             :prefix-icon="User"
-            size="large"
           />
         </el-form-item>
 
@@ -30,16 +33,15 @@
           <el-input
             v-model="loginForm.password"
             type="password"
-            placeholder="Enter your password"
+            placeholder="••••••••"
             :prefix-icon="Lock"
             show-password
-            size="large"
           />
         </el-form-item>
 
         <div class="form-options">
           <el-checkbox v-model="rememberMe">Remember me</el-checkbox>
-          <el-link type="primary" :underline="false">Forgot password?</el-link>
+          <el-link type="primary" :underline="false" class="forgot-link">Forgot password?</el-link>
         </div>
 
         <el-button 
@@ -48,19 +50,20 @@
           :loading="loading" 
           @click="handleLogin"
         >
-          Sign In
+          Access Dashboard
         </el-button>
         
         <div class="register-hint">
-          Don't have an account? <el-link type="primary" @click="router.push('/register')">Register</el-link>
+          New to the platform? <el-link type="primary" @click="router.push('/register')">Create Account</el-link>
         </div>
       </el-form>
     </el-card>
   </div>
 </template>
+
 <script setup>
 import { ref, reactive } from 'vue'
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, VideoCameraFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import http from '@/api/http'
 import { useRouter } from 'vue-router'
@@ -68,6 +71,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const loginFormRef = ref(null)
 const loading = ref(false)
+const rememberMe = ref(false)
 
 const loginForm = reactive({
   email: '',
@@ -76,12 +80,12 @@ const loginForm = reactive({
 
 const rules = {
   email: [
-    { required: true, message: 'Email is required', trigger: 'blur' },
-    { type: 'email', message: 'Please enter a valid email', trigger: 'blur' }
+    { required: true, message: 'Identity required', trigger: 'blur' },
+    { type: 'email', message: 'Invalid format', trigger: 'blur' }
   ],
   password: [
-    { required: true, message: 'Password is required', trigger: 'blur' },
-    { min: 6, message: 'Password must be at least 6 characters', trigger: 'blur' }
+    { required: true, message: 'Password required', trigger: 'blur' },
+    { min: 6, message: 'Security minimum: 6 characters', trigger: 'blur' }
   ]
 }
 
@@ -96,15 +100,18 @@ const handleLogin = async () => {
         
         localStorage.setItem('token', response.token)
         const role = response.user.role_id
-
-        if(role!==1){
-            ElMessage.success('Login Successful')
+        if(role === 1) {
+            ElMessage.error("Access Restricted: Administrator Only")
+            localStorage.removeItem('token')
+        } else {
+            ElMessage.success({
+              message: 'Authentication Successful',
+              customClass: 'premium-message'
+            })
             router.push('/dashboard')
-        }else{
-            ElMessage.error("Unauthorized Account")
         }
       } catch (error) {
-        ElMessage.error(error.response?.data?.message || 'Login Failed')
+        ElMessage.error(error.response?.data?.message || 'Authentication Failed')
       } finally {
         loading.value = false
       }
@@ -113,90 +120,81 @@ const handleLogin = async () => {
 }
 </script>
 <style lang="scss" scoped>
+$text-main: #0f172a;
+$text-muted: #64748b;
+$primary: #6366f1; // Indigo
+$ease: cubic-bezier(0.25, 1, 0.5, 1);
+
 .login-wrapper {
-  height: 100vh;
-  width: 100vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #f8fafc;
-  position: relative;
-  overflow: hidden;
+  height: 100vh; width: 100vw;
+  display: flex; justify-content: center; align-items: center;
+  background: #0f172a; // Deep Navy/Slate
+  position: relative; overflow: hidden;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-// Modern Gradient Background
-.bg-decoration {
-  position: absolute;
-  top: -10%;
-  right: -10%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(64,158,255,0.1) 0%, rgba(255,255,255,0) 70%);
-  z-index: 0;
+// Animated Decorative Background
+.bg-mesh {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(#1e293b 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.3;
 }
 
-.modern-login-card {
-  width: 100%;
-  max-width: 420px;
-  border-radius: 16px;
-  border: none;
+.bg-orb {
+  position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15;
+  &.orb-1 { top: -100px; right: -100px; width: 400px; height: 400px; background: $primary; }
+  &.orb-2 { bottom: -100px; left: -100px; width: 300px; height: 300px; background: #ec4899; }
+}
+
+.premium-login-card {
+  width: 100%; 
+  max-width: 440px;
+  height: 85%;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 20px;
-  z-index: 1;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
 .login-brand {
-  text-align: center;
-  margin-bottom: 32px;
-
+  text-align: center; margin-bottom: 40px;
   .brand-logo {
-    width: 48px;
-    height: 48px;
-    background: #409eff;
-    color: white;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0 auto 16px;
-    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+    width: 64px; height: 64px; background: $text-main; color: white;
+    border-radius: 18px; display: flex; align-items: center;
+    justify-content: center; font-size: 28px; margin: 0 auto 20px;
   }
+  h1 { font-size: 28px; color: $text-main; font-weight: 800; letter-spacing: -1px; }
+  p { color: $text-muted; font-size: 15px; margin-top: 6px; }
+}
 
-  h1 {
-    font-size: 24px;
-    color: #1e293b;
-    margin: 0;
-    font-weight: 700;
-  }
+// Input Styling
+:deep(.el-input__wrapper) {
+  background: #f8fafc; box-shadow: none; border: 1px solid #e2e8f0;
+  border-radius: 12px; padding: 12px 16px; transition: all 0.3s $ease;
+  &.is-focus { border-color: $primary; background: white; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+}
 
-  p {
-    color: #64748b;
-    font-size: 14px;
-    margin-top: 8px;
-  }
+:deep(.el-form-item__label) {
+  font-weight: 700; color: $text-main; font-size: 13px; margin-bottom: 8px;
 }
 
 .form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  display: flex; justify-content: space-between; align-items: center; margin: 24px 0;
+  .forgot-link { font-weight: 600; font-size: 13px; }
 }
 
 .submit-btn {
-  width: 100%;
-  height: 48px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
+  width: 100%; height: 54px; background: $text-main; border: none;
+  font-size: 16px; font-weight: 700; border-radius: 14px;
+  transition: all 0.3s $ease;
+  &:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); }
 }
 
 .register-hint {
-  text-align: center;
-  margin-top: 24px;
-  font-size: 14px;
-  color: #64748b;
+  text-align: center; margin-top: 32px; font-size: 14px; color: $text-muted;
+  .el-link { font-weight: 700; }
 }
 </style>

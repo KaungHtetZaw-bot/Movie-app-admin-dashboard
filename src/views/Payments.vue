@@ -3,7 +3,7 @@
     <div class="page-header">
       <div class="header-content">
         <span class="system-tag">Financial Settings</span>
-        <h1>Payment Gateways</h1>
+        <h1>Payment Accounts</h1>
         <p>Manage secure entry points for subscriber transactions.</p>
       </div>
       <el-button class="premium-add-btn" @click="openDialog()">

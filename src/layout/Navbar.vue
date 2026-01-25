@@ -37,7 +37,7 @@
         <template #dropdown>
           <el-dropdown-menu class="premium-dropdown">
             <el-dropdown-item :icon="User" @click="router.push('/profile')">Profile</el-dropdown-item>
-            <el-dropdown-item :icon="Setting">System Settings</el-dropdown-item>
+            <el-dropdown-item :icon="Setting" @click="router.push('/setting')">System Settings</el-dropdown-item>
             <el-dropdown-item divided :icon="SwitchButton" @click="handleLogout" class="logout-link">
               Logout
             </el-dropdown-item>

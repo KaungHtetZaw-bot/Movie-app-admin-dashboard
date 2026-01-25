@@ -31,7 +31,7 @@ const routes = [
         path: 'payments',
         name: 'Payments',
         component: () => import('@/views/Payments.vue'),
-        meta: { title: 'Payment Gateways' }
+        meta: { title: 'Payment Accounts' }
       },
       {
         path: 'purchases',
@@ -44,6 +44,12 @@ const routes = [
         name: 'profile',
         component: () => import('@/views/Profile.vue'),
         meta: { title: 'Profile' }
+      },
+      {
+        path: 'setting',
+        name: 'setting',
+        component: () => import('@/views/Setting.vue'),
+        meta: { title: 'Setting' }
       },
     ]
   },
