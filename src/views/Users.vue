@@ -79,12 +79,14 @@
               <el-button link class="more-btn"><el-icon><MoreFilled /></el-icon></el-button>
               <template #dropdown>
                 <el-dropdown-menu class="premium-dropdown">
-                  <el-dropdown-item :icon="User">View History</el-dropdown-item>
-                  <el-dropdown-item :icon="Edit">Modify Profile</el-dropdown-item>
-                  <el-dropdown-item divided class="delete-action" @click="handleDelete(scope.row.id)">
-                    <el-icon><Delete /></el-icon> Delete Account
-                  </el-dropdown-item>
-                </el-dropdown-menu>
+                <el-dropdown-item :icon="promote(scope.row,1)">Dispromote to user</el-dropdown-item>
+                <el-dropdown-item :icon="prmote(scope.row,2)" @click="openEdit(scope.row)" command="edit">
+                  Promote To Admin
+                </el-dropdown-item>
+                <el-dropdown-item divided class="delete-action" @click="handleDelete(scope.row.id)">
+                  <el-icon><Delete /></el-icon> Delete Account
+                </el-dropdown-item>
+              </el-dropdown-menu>
               </template>
             </el-dropdown>
           </template>
@@ -95,13 +97,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { Search, StarFilled, MoreFilled, User, Edit, Delete, Filter } from '@element-plus/icons-vue';
+import { ref, computed, onMounted, reactive } from 'vue';
+import { Search, StarFilled, MoreFilled, User, Edit, Delete, Filter,Close } from '@element-plus/icons-vue';
 import http from '@/api/http';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const state = ref({ users: [], isLoading: false });
 const searchQuery = ref('');
+
 
 // Access Level Helpers
 const getAccessLabel = (user) => {
@@ -150,6 +153,40 @@ const handleDelete = (id) => {
     ElMessage.success('User has been removed from the directory');
     fetchData();
   });
+};
+
+const editDrawer = reactive({
+  visible: false,
+  submitting: false
+});
+
+const editForm = reactive({
+  id: null,
+  name: '',
+  email: '',
+  role_id: 1
+});
+
+const openEdit = (user) => {
+  editForm.id = user.id;
+  editForm.name = user.name;
+  editForm.email = user.email;
+  editForm.role_id = user.role_id;
+  editDrawer.visible = true;
+};
+
+const handleUpdate = async () => {
+  editDrawer.submitting = true;
+  try {
+    await http.put(`/users/${editForm.id}`, editForm);
+    ElMessage.success('Member profile updated successfully');
+    editDrawer.visible = false;
+    fetchData(); // Refresh the table
+  } catch (error) {
+    ElMessage.error("Update failed. Please check your connection.");
+  } finally {
+    editDrawer.submitting = false;
+  }
 };
 
 onMounted(fetchData);
@@ -281,5 +318,69 @@ $ease: cubic-bezier(0.25, 1, 0.5, 1);
   border-radius: 12px;
   padding: 8px;
   .delete-action { color: #ef4444; &:hover { background: #fef2f2 !important; } }
+}
+
+/* DRAWER INTEGRATION */
+:deep(.premium-drawer) {
+  background: white;
+  border-left: 1px solid #f1f5f9;
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.04);
+
+  .el-drawer__header {
+    margin-bottom: 0;
+    padding: 30px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .drawer-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    
+    .category-tag { font-size: 10px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; }
+    h3 { margin: 4px 0 0; font-size: 20px; font-weight: 800; color: $text-main; }
+    
+    .close-btn { 
+      border: 1px solid #e2e8f0; border-radius: 50%; width: 32px; height: 32px; padding: 0;
+      color: $text-muted; &:hover { background: #f8fafc; color: $text-main; }
+    }
+  }
+
+  .drawer-body {
+    padding: 30px;
+
+    .profile-card-mini {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: #f8fafc;
+      border-radius: 16px;
+      margin-bottom: 30px;
+      
+      h4 { margin: 0; font-weight: 700; color: $text-main; }
+      p { margin: 2px 0 0; font-size: 12px; color: $text-muted; font-family: monospace; }
+    }
+  }
+
+  .edit-form {
+    :deep(.el-form-item__label) { font-weight: 700; color: $text-main; font-size: 13px; }
+    :deep(.el-input__wrapper) { 
+        background: #f8fafc; border-radius: 12px; box-shadow: none !important; border: 1px solid #e2e8f0; 
+        &.is-focus { border-color: #3b82f6; background: white; }
+    }
+  }
+
+  .drawer-footer {
+    padding: 20px 30px;
+    border-top: 1px solid #f1f5f9;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    
+    .el-button { height: 45px; border-radius: 12px; font-weight: 700; }
+    .save-btn { background: $text-main; border: none; &:hover { transform: translateY(-1px); } }
+  }
 }
 </style>

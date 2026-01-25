@@ -43,7 +43,7 @@
         <div class="spacer"></div>
 
         <div class="footer-section">
-          <el-menu-item @click="handleLogout" class="logout-item">
+          <el-menu-item @click="handleLogout" index="#" class="logout-item">
             <el-icon><SwitchButton /></el-icon>
             <template #title>Sign Out</template>
           </el-menu-item>

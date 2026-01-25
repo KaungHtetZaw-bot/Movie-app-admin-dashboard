@@ -55,11 +55,55 @@
         </el-button>
 
         <div class="register-hint">
-          Already part of the crew? <el-link type="primary" @click="router.push('/login')">Sign In</el-link>
+          Already part of the crew? <el-link type="primary" underline="never" @click="router.push('/login')">Sign In</el-link>
         </div>
       </el-form>
     </el-card>
   </div>
+    <el-dialog 
+      v-model="showOtpDialog" 
+      width="440px" 
+      :close-on-click-modal="false" 
+      :show-close="false"
+      class="otp-dialog"
+      align-center
+    >
+      <div class="otp-container">
+        <div class="icon-box">
+          <el-icon><Message /></el-icon>
+        </div>
+        <h2>Verify your email</h2>
+        <p>We've sent a 6-digit verification code to <br><strong>{{ registerForm.email }}</strong></p>
+
+        <div class="otp-input-group">
+          <input 
+            v-for="(digit, index) in 6" 
+            :key="index"
+            v-model="otpDigits[index]"
+            type="text"
+            maxlength="1"
+            class="otp-slot"
+            :id="'digit-' + index"
+            @input="handleInput(index, $event)"
+            @keydown.delete="handleDelete(index, $event)"
+          />
+        </div>
+
+        <el-button 
+          type="primary" 
+          class="verify-btn" 
+          :loading="isVerifying" 
+          @click="submitVerification"
+        >
+          Confirm & Log In
+        </el-button>
+
+        <p class="resend-text">
+          Didn't receive the code? 
+          <el-button link type="primary" @click="handleRegister">Resend</el-button>
+        </p>
+      </div>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -72,6 +116,9 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const registerFormRef = ref(null)
 const loading = ref(false)
+const showOtpDialog = ref(false);
+const isVerifying = ref(false);
+const otpDigits = reactive(['', '', '', '', '', '']);
 
 const registerForm = reactive({
   name: '',
@@ -105,13 +152,54 @@ const rules = {
 }
 
 const handleRegister = async () => {
-  if (!registerFormRef.value) return
-  
-  await registerFormRef.value.validate(async (valid) => {
+  if (!registerFormRef.value) return;
+  try {
+    loading.value = true
+    await registerFormRef.value.validate()
+    await http.post('/register', registerForm)
+    showOtpDialog.value = true;
+    console.log('Registration successful, OTP dialog shown.',showOtpDialog.value);
+  } catch (error) {
+    console.error('Registration error:', error?.password_confirmation);
+    const name = error?.name?.[0]?.message;
+    const ConfirmPassword = error?.password_confirmation?.[0]?.message || error?.password_confirmation?.[0]?.error;
+    ElMessage.error(name || ConfirmPassword || error.response?.data?.message || 'Registration failed. Please try again.')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleInput = (index, event) => {
+  const value = event.target.value;
+  if (value && index < 5) {
+    document.getElementById(`digit-${index + 1}`).focus();
+  }
+};
+
+const handleDelete = (index, event) => {
+  if (!otpDigits[index] && index > 0) {
+    document.getElementById(`digit-${index - 1}`).focus();
+  }
+};
+
+const submitVerification = async () => {
+  const otpCode = otpDigits.join('');
+  if (otpCode.length < 6) {
+    ElMessage.error('Please enter the complete 6-digit code.');
+    return;
+  }
+  try {
+    isVerifying.value = true;
+    await registerFormRef.value.validate(async (valid) => {
     if (valid) {
       loading.value = true
       try {
-        await http.post('/register', registerForm)
+        const payload = {
+          ...registerForm,
+          code: otpCode
+        };
+        console.log('Submitting OTP code:', typeof(otpCode), otpCode);
+        await http.post('/verify-code', payload)
         ElMessage({
           message: 'Account Created! Please contact a Super Admin to activate your access.',
           type: 'warning',
@@ -121,13 +209,19 @@ const handleRegister = async () => {
         })
         router.push('/login')
       } catch (error) {
+        console.log('OTP verification error:', error);
         ElMessage.error(error.response?.data?.message || 'Registration failed')
       } finally {
         loading.value = false
       }
     }
   })
-}
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || 'OTP verification failed. Please try again.');
+  } finally {
+    isVerifying.value = false;
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -170,5 +264,34 @@ $ease: cubic-bezier(0.25, 1, 0.5, 1);
 
 .register-hint {
   text-align: center; margin-top: 24px; font-size: 14px; color: $text-muted;
+}
+
+.otp-container {
+  text-align: center;
+  padding: 20px 10px;
+
+  .icon-box {
+    width: 60px; height: 60px; background: #f0f7ff; color: #3b82f6;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px; font-size: 28px;
+  }
+
+  h2 { font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+  p { color: #64748b; font-size: 14px; line-height: 1.6; margin-bottom: 30px; }
+
+  .otp-input-group {
+    display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;
+
+    .otp-slot {
+      width: 45px; height: 55px; text-align: center; font-size: 24px; font-weight: 700;
+      border: 2px solid #e2e8f0; border-radius: 12px; background: #f8fafc;
+      transition: all 0.2s ease;
+      
+      &:focus { border-color: #3b82f6; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+    }
+  }
+
+  .verify-btn { width: 100%; height: 50px; border-radius: 12px; font-weight: 700; font-size: 16px; }
+  .resend-text { margin-top: 20px; font-size: 13px; }
 }
 </style>
