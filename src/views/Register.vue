@@ -71,6 +71,10 @@
       <div class="otp-container">
         <div class="icon-box">
           <el-icon><Message /></el-icon>
+          <el-icon 
+            style="position: absolute; top: 10px; right: 10px; font-size: 40px; color: #9ca3af; cursor: pointer;" 
+            @click="showOtpDialog = false"
+          ><Close /></el-icon>
         </div>
         <h2>Verify your email</h2>
         <p>We've sent a 6-digit verification code to <br><strong>{{ registerForm.email }}</strong></p>
@@ -108,7 +112,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { User, Lock, Message, Check, VideoCameraFilled } from '@element-plus/icons-vue'
+import { User, Lock, Message, Check, VideoCameraFilled,Close } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import http from '@/api/http'
 import { useRouter } from 'vue-router'
@@ -239,13 +243,38 @@ $ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .premium-register-card {
-  width: 100%; max-width: 500px; /* Slightly wider for two-column rows */
+  width: 100%; max-width: 500px;
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(10px);
   border-radius: 28px;
   border: none;
   padding: 30px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  .login-brand {
+  text-align: center; 
+  margin-bottom: 40px;
+  .brand-logo {
+    width: 64px; 
+    height: 64px; 
+    background: $text-main; 
+    color: white;
+    border-radius: 18px; 
+    display: flex; 
+    align-items: center;
+    justify-content: center; 
+    font-size: 28px; 
+    margin: 0 auto 20px;
+  }
+  h1 { 
+    font-size: 28px; 
+    color: $text-main; 
+    font-weight: 800; 
+    letter-spacing: -1px; }
+  p { 
+    color: $text-muted; 
+    font-size: 15px; 
+    margin-top: 6px; }
+}
 }
 
 /* ... (Keep the .bg-mesh, .bg-orb, and .login-brand styles from Login.vue) ... */

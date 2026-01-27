@@ -79,9 +79,9 @@
               <el-button link class="more-btn"><el-icon><MoreFilled /></el-icon></el-button>
               <template #dropdown>
                 <el-dropdown-menu class="premium-dropdown">
-                <el-dropdown-item :icon="promote(scope.row,1)">Dispromote to user</el-dropdown-item>
-                <el-dropdown-item :icon="prmote(scope.row,2)" @click="openEdit(scope.row)" command="edit">
-                  Promote To Admin
+                <el-dropdown-item :icon="User" v-if="scope.row.role_id == 2" @click="handleRoleChange(scope.row,1)">Demote to User</el-dropdown-item>
+                <el-dropdown-item :icon="StarFilled" v-else @click="handleRoleChange(scope.row,2)" command="edit">
+                  Promote to Admin
                 </el-dropdown-item>
                 <el-dropdown-item divided class="delete-action" @click="handleDelete(scope.row.id)">
                   <el-icon><Delete /></el-icon> Delete Account
@@ -167,25 +167,14 @@ const editForm = reactive({
   role_id: 1
 });
 
-const openEdit = (user) => {
-  editForm.id = user.id;
-  editForm.name = user.name;
-  editForm.email = user.email;
-  editForm.role_id = user.role_id;
-  editDrawer.visible = true;
-};
-
-const handleUpdate = async () => {
-  editDrawer.submitting = true;
+const handleRoleChange = async (user, newRoleId) => {
   try {
-    await http.put(`/users/${editForm.id}`, editForm);
+    await http.patch(`/users/${user.id}`, { role_id: newRoleId });
     ElMessage.success('Member profile updated successfully');
-    editDrawer.visible = false;
-    fetchData(); // Refresh the table
+    fetchData();
   } catch (error) {
-    ElMessage.error("Update failed. Please check your connection.");
-  } finally {
-    editDrawer.submitting = false;
+    console.error(error.message);
+    ElMessage.error(error.message || "Update failed. Please check your connection.");
   }
 };
 
