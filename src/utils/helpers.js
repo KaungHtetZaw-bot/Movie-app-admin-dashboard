@@ -1,5 +1,4 @@
 export const getImageUrl = (path) => {
-    alert("hahah")
   if (!path) {
     return 'https://ui-avatars.com/api/?name=User&background=f1f5f9&color=64748b';
   }
