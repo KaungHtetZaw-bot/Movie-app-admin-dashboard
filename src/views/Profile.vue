@@ -16,7 +16,7 @@
               <div class="status-badge"></div>
             </div>
             <h3>{{ userForm.name }}</h3>
-            <div class="role-pill">Super Admin</div>
+            <div class="role-pill">{{ authStore?.user?.role?.name }}</div>
           </div>
 
           <el-divider class="premium-divider" />
@@ -33,7 +33,7 @@
               <div class="icon-box"><el-icon><Calendar /></el-icon></div>
               <div class="info">
                 <span class="label">Member Since</span>
-                <span class="value">Jan 22, 2026</span>
+                <span class="value">{{authStore.formatDate(authStore.user.created_at)}}</span>
               </div>
             </div>
           </div>
@@ -58,7 +58,7 @@
                   </el-col>
                 </el-row>
                 <div class="form-actions">
-                  <el-button class="action-btn primary" @click="updateProfile">Save Changes</el-button>
+                  <el-button class="action-btn primary" :loading="btnLoading" :disabled="userForm.name === authStore.user.name && userForm.email === authStore.user.email" @click="updateProfile">Save Changes</el-button>
                 </div>
               </el-form>
             </el-tab-pane>
@@ -72,7 +72,7 @@
                   <el-input type="password" show-password placeholder="Enter new password" />
                 </el-form-item>
                 <div class="form-actions">
-                  <el-button class="action-btn danger">Update Security</el-button>
+                  <el-button class="action-btn danger" @click="updateSecurity" :loading="btnLoading">Update Security</el-button>
                 </div>
               </el-form>
             </el-tab-pane>
@@ -84,20 +84,55 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-// FIXED: Changed Mail to Message
+import { ref, reactive, onMounted } from 'vue'
 import { Message, Calendar } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '@/store/auth'
+import http from '@/api/http'
 
 const activeTab = ref('edit')
+const authStore = useAuthStore()
+const btnLoading = ref(false)
 const userForm = reactive({
-  name: 'Administrator',
-  email: 'admin@example.com'
+  name: authStore.user?.name || 'Administrator',
+  email: authStore.user?.email || 'admin@example.com'
 })
 
-const updateProfile = () => {
+onMounted(()=>{
+  console.log(authStore.user)
+})
+const updateProfile = async () => {
+  const isUnchanged = userForm.name === authStore.user.name && 
+                      userForm.email === authStore.user.email;
+  
+  if (isUnchanged) {
+    ElMessage({
+      message: 'Please change at least one value to update.',
+      type: 'warning'
+    });
+    return;
+  }
+
+  try {
+    btnLoading.value = true;
+    const res = await http.patch(`/users/${authStore.user.id}/change-profile`, userForm);
+    authStore.user = res.user; 
+
+    ElMessage({
+      message: 'Profile updated successfully',
+      type: 'success',
+      customClass: 'premium-message'
+    });
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || 'Update failed');
+  } finally {
+    btnLoading.value = false;
+  }
+};
+
+const updateSecurity = () => {
   ElMessage({
-    message: 'Profile settings updated successfully',
+    message: 'Security settings updated successfully',
     type: 'success',
     customClass: 'premium-message'
   })

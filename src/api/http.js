@@ -1,3 +1,4 @@
+import router from '@/router'
 import axios from 'axios'
 
 const http = axios.create({
@@ -25,13 +26,20 @@ http.interceptors.request.use(
  * - Global error handling
  */
 http.interceptors.response.use(
-  response => response.data,
-  error => {
-    if (error.response?.status === 401) {
+  res => res.data,
+  err => {
+    const status = err.response?.status
+    const url = err.config?.url
+
+    // 🚫 Don't redirect on login/register errors
+    const authRoutes = ['/login', '/register']
+
+    if (status === 401 && !authRoutes.includes(url)) {
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      router.replace('/login')
     }
-    return Promise.reject(error)
+
+    return Promise.reject(err)
   }
 )
 

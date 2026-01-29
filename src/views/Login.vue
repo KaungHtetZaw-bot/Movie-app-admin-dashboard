@@ -47,7 +47,7 @@
         <el-button 
           type="primary" 
           class="submit-btn" 
-          :loading="loading" 
+          :loading="authStore.isLoading" 
           @click="handleLogin"
         >
           Access Dashboard
@@ -67,11 +67,13 @@ import { User, Lock, VideoCameraFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import http from '@/api/http'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
 
 const router = useRouter()
 const loginFormRef = ref(null)
 const loading = ref(false)
 const rememberMe = ref(false)
+const authStore = useAuthStore()
 
 const loginForm = reactive({
   email: '',
@@ -94,27 +96,7 @@ const handleLogin = async () => {
 
   await loginFormRef.value.validate(async (valid) => {
     if (valid) {
-      loading.value = true
-      try {
-        const response = await http.post('/login', loginForm)
-        
-        localStorage.setItem('token', response.token)
-        const role = response.user.role_id
-        if(role === 1) {
-            ElMessage.error("Access Restricted: Administrator Only")
-            localStorage.removeItem('token')
-        } else {
-            ElMessage.success({
-              message: 'Authentication Successful',
-              customClass: 'premium-message'
-            })
-            router.push('/dashboard')
-        }
-      } catch (error) {
-        ElMessage.error(error.response?.data?.message || 'Authentication Failed')
-      } finally {
-        loading.value = false
-      }
+      authStore.login(loginForm,router)
     }
   })
 }
@@ -187,10 +169,18 @@ $ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .submit-btn {
-  width: 100%; height: 54px; background: $text-main; border: none;
-  font-size: 16px; font-weight: 700; border-radius: 14px;
+  width: 100%; 
+  height: 54px; 
+  background: $text-main; 
+  border: none;
+  font-size: 16px; 
+  font-weight: 700; 
+  border-radius: 14px;
   transition: all 0.3s $ease;
-  &:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); }
+  &:hover { 
+    background: #1e293b; 
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); }
 }
 
 .register-hint {
