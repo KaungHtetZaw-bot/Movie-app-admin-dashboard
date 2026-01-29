@@ -8,13 +8,10 @@ export const useAdminStore = defineStore('admin', {
     users: [],
     plans: [],
     purchases: [],
-
     isLoading: false,
-    baseUrl: 'http://192.168.110.109:8000/storage/purchases/'
   }),
 
   getters: {
-    // This replaces your "mixUserAndPurchase" computed property in components
     mixedPurchases: (state) => {
       return state.purchases.map(purchase => {
         const user = state.users.find(u => u.id === purchase.user_id)
@@ -45,7 +42,6 @@ export const useAdminStore = defineStore('admin', {
       this.isSidebarCollapsed = !this.isSidebarCollapsed
       console.log(this.isSidebarCollapsed)
     },
-    // Fetch everything at once (Modern "Eager Loading")
     async fetchAllData() {
       this.isLoading = true
       try {
@@ -63,18 +59,9 @@ export const useAdminStore = defineStore('admin', {
         this.isLoading = false
       }
     },
-
-    // Centralized Image Helper
-    getImage(path) {
-      if (!path) return 'https://via.placeholder.com/150?text=No+Image'
-      return `${this.baseUrl}${path}`
-    },
-
-    // Action to handle approvals directly from store
     async updatePurchaseStatus(id, status) {
       try {
         await http.patch(`/purchases/${id}`, { status })
-        // Update local state immediately so UI feels fast
         const index = this.purchases.findIndex(p => p.id === id)
         if (index !== -1) this.purchases[index].status = status
         ElMessage.success(`Request ${status}`)

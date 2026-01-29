@@ -54,8 +54,8 @@
               <el-image 
                 v-if="scope.row.photo"
                 class="receipt-thumb"
-                :src="adminStore.getImage(scope.row.photo)" 
-                :preview-src-list="[adminStore.getImage(scope.row.photo)]"
+                :src="getImageUrl(scope.row.photo)" 
+                :preview-src-list="[getImageUrl(scope.row.photo)]"
                 fit="cover"
                 preview-teleported
               >
@@ -103,9 +103,10 @@
   </div>
 </template>
 <script setup>
-import { Check, Close, Picture, UserFilled } from '@element-plus/icons-vue'
+import { Check, Close, Picture } from '@element-plus/icons-vue'
 import { useAdminStore } from '@/store/admin'
 import { computed, onMounted, ref } from 'vue'
+import { getImageUrl } from '@/utils/helpers'
 
 const adminStore = useAdminStore()
 const activeTab = ref('all')

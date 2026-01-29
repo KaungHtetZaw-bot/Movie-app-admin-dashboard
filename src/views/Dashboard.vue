@@ -1,42 +1,3 @@
-<script setup>
-import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { User, Timer, CircleCheck, Money, Download, Top } from '@element-plus/icons-vue'
-import { useAdminStore } from '@/store/admin'
-
-const router = useRouter()
-const adminStore = useAdminStore()
-
-// Helper for formatting large numbers
-const formatNumber = (num) => {
-  if (num === undefined || num === null) return '0'
-  return new Intl.NumberFormat().format(num)
-}
-
-// Helper for human-readable dates (missing in previous snippet)
-const formatDate = (dateString) => {
-  if (!dateString) return 'Recent'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-const metricCards = computed(() => [
-  { title: 'Total Users', value: adminStore.users.length, icon: User, color: '#6366f1', route: '/users' },
-  { title: 'Pending Tasks', value: adminStore.pendingCount, icon: Timer, color: '#f59e0b', route: '/purchases' },
-  { title: 'Successful', value: adminStore.successCount, icon: CircleCheck, color: '#10b981', route: '/purchases' },
-  { title: 'Gross Revenue', value: adminStore.totalRevenue, icon: Money, color: '#0f172a', isCurrency: true, route: '/dashboard' },
-])
-
-onMounted(async () => {
-  await adminStore.fetchAllData()
-})
-</script>
-
 <template>
   <div class="dashboard-wrapper">
     <header class="dashboard-header">
@@ -132,13 +93,35 @@ onMounted(async () => {
   </div>
 </template>
 
+<script setup>
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { User, Timer, CircleCheck, Money, Download, Top } from '@element-plus/icons-vue'
+import { useAdminStore } from '@/store/admin'
+import { formatDate,formatNumber } from '@/utils/helpers'
+
+const router = useRouter()
+const adminStore = useAdminStore()
+
+const metricCards = computed(() => [
+  { title: 'Total Users', value: adminStore.users.length, icon: User, color: '#6366f1', route: '/users' },
+  { title: 'Pending Tasks', value: adminStore.pendingCount, icon: Timer, color: '#f59e0b', route: '/purchases' },
+  { title: 'Successful', value: adminStore.successCount, icon: CircleCheck, color: '#10b981', route: '/purchases' },
+  { title: 'Gross Revenue', value: adminStore.totalRevenue, icon: Money, color: '#0f172a', isCurrency: true, route: '/dashboard' },
+])
+
+onMounted(async () => {
+  await adminStore.fetchAllData()
+})
+</script>
+
 <style lang="scss" scoped>
 $text-main: #0f172a;
 $text-muted: #64748b;
 $ease-premium: cubic-bezier(0.25, 1, 0.5, 1);
 
 .dashboard-wrapper {
-  padding: 0; // Padding handled by Layout index
+  padding: 0;
 }
 
 .dashboard-header {
