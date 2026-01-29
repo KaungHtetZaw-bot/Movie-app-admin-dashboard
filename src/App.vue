@@ -18,6 +18,7 @@
 
 <script setup>
 import { onMounted } from 'vue'
+import { VideoCameraFilled } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/store/auth'
 
 const authStore = useAuthStore()

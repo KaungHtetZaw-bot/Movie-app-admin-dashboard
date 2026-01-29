@@ -10,7 +10,7 @@ export const useAdminStore = defineStore('admin', {
     purchases: [],
 
     isLoading: false,
-    baseUrl: 'http://192.168.110.102:8000/storage/purchases/'
+    baseUrl: 'http://192.168.110.109:8000/storage/purchases/'
   }),
 
   getters: {

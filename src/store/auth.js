@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
 import http from "@/api/http";
 
 export const useAuthStore = defineStore('authUser', {
