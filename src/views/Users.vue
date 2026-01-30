@@ -101,6 +101,7 @@ import { ref, computed, onMounted, reactive } from 'vue';
 import { Search, StarFilled, MoreFilled, User, Edit, Delete, Filter,Close } from '@element-plus/icons-vue';
 import http from '@/api/http';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { formatDate } from '@/utils/helpers';
 
 const state = ref({ users: [], isLoading: false });
 const searchQuery = ref('');
@@ -138,10 +139,6 @@ const filteredUsers = computed(() => {
   );
 });
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-};
-
 const handleDelete = (id) => {
   ElMessageBox.confirm('This action will permanently revoke user access. Continue?', 'Archive User', {
     confirmButtonText: 'Revoke Access',
@@ -169,8 +166,8 @@ const editForm = reactive({
 
 const handleRoleChange = async (user, newRoleId) => {
   try {
-    await http.patch(`/users/${user.id}`, { role_id: newRoleId });
-    ElMessage.success('Member profile updated successfully');
+    const res = await http.patch(`/users/${user.id}/change-profile`, { role_id: newRoleId });
+    ElMessage.success(res?.message || 'Member profile updated successfully');
     fetchData();
   } catch (error) {
     console.error(error.message);
