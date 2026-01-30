@@ -2,11 +2,19 @@ import router from '@/router'
 import { useAuthStore } from '@/store/auth'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import nprogress from 'nprogress'
+import 'nprogress/nprogress.css'
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
   timeout: 10000
 })
+
+nprogress.configure({ 
+  showSpinner: false, 
+  easing: 'ease', 
+  speed: 500 
+});
 
 /**
  * Request interceptor
@@ -14,6 +22,7 @@ const http = axios.create({
  */
 http.interceptors.request.use(
   config => {
+    nprogress.start();
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
@@ -28,7 +37,10 @@ http.interceptors.request.use(
  * - Global error handling
  */
 http.interceptors.response.use(
-  res => res.data,
+  res => {
+    nprogress.done();
+    return res.data;
+  },
   async err => {
     const authStore = useAuthStore()
     const originalRequest = err.config

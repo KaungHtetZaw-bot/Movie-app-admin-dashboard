@@ -55,6 +55,7 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useAuthStore } from '@/store/auth'
 import { 
   Monitor, User, ShoppingCart, 
   GoldMedal, Wallet, SwitchButton 
@@ -64,17 +65,19 @@ import { useAdminStore } from '@/store/admin'
 const route = useRoute()
 const router = useRouter()
 const adminStore = useAdminStore()
+const authStore = useAuthStore()
 
 const handleLogout = () => {
   ElMessageBox.confirm('Are you sure you want to log out?', 'Logout', {
     confirmButtonText: 'Logout',
     cancelButtonText: 'Cancel',
     type: 'warning',
-  }).then(() => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('role_id')
-    ElMessage.success('Logged out successfully')
-    router.push('/login')
+    customClass: 'premium-logout-box',
+    center: true,
+    showClose: false,
+  }).then(async () => {
+    ElMessage.success('Logging out...')
+    await authStore.logout()
   })
 }
 </script>
@@ -146,7 +149,7 @@ $sidebar-width: 260px;
     overflow-y: auto;
     overflow-x: hidden;
 
-    &::-webkit-scrollbar { width: 0; } // Hide scrollbar for clean look
+    &::-webkit-scrollbar { width: 0; }
   }
 
   .premium-menu {
@@ -212,5 +215,53 @@ $sidebar-width: 260px;
   :deep(.el-badge__content) {
     background-color: #10b981; // Emerald for "online/new" feel
   }
+}
+</style>
+
+<style>
+/* Container Design */
+.premium-logout-box {
+  border: none;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Header/Title text */
+.premium-logout-box .el-message-box__title {
+  font-weight: 600 !important;
+  font-size: 1.25rem !important;
+}
+
+/* Content message text */
+.premium-logout-box .el-message-box__message {
+  font-size: 1rem !important;
+  margin: 10px !important;
+}
+
+/* Buttons */
+.premium-logout-box .el-button {
+  border-radius: 8px !important;
+  padding: 10px 24px !important;
+  transition: all 0.3s ease;
+}
+
+/* Cancel Button */
+.premium-logout-box .el-button--default {
+  background: transparent !important;
+  border: 1px solid #444 !important;
+  color: #ccc !important;
+}
+
+/* Confirm (Logout) Button */
+.premium-logout-box .el-button--primary {
+  background: linear-gradient(135deg, #ff4d4f, #cf1322) !important; /* Cinematic Red */
+  border: none !important;
+  color: white !important;
+}
+
+.premium-logout-box .el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 77, 79, 0.4);
 }
 </style>

@@ -33,7 +33,7 @@
               <div class="icon-box"><el-icon><Calendar /></el-icon></div>
               <div class="info">
                 <span class="label">Member Since</span>
-                <span class="value">{{authStore.formatDate(authStore.user.created_at)}}</span>
+                <span class="value">{{formatDate(authStore.user.created_at)}}</span>
               </div>
             </div>
           </div>
@@ -133,11 +133,12 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Message, Calendar,WarningFilled, Lock } from '@element-plus/icons-vue'
+import { Message, Calendar, Lock } from '@element-plus/icons-vue'
 
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/store/auth'
 import http from '@/api/http'
+import { formatDate } from '@/utils/helpers'
 
 const activeTab = ref('edit')
 const authStore = useAuthStore()

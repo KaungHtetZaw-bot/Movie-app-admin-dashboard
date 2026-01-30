@@ -12,3 +12,12 @@ h1, h2, h3, .logo-text {
   font-weight: 700;
   letter-spacing: -0.02em; /* Tighter spacing looks more modern */
 }
+
+#nprogress .bar {
+  background: #ff4d4f !important;
+  height: 3px !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #ff4d4f, 0 0 5px #ff4d4f !important;
+}

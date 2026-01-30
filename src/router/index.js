@@ -1,6 +1,7 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/layout/index.vue'
+import nprogress from 'nprogress'
 
 const routes = [
   {
@@ -72,7 +73,11 @@ const router = createRouter({
   routes
 })
 
+router.afterEach(() => {
+  nprogress.done();
+});
 router.beforeEach((to, from, next) => {
+  nprogress.start();
   const token = localStorage.getItem('token');
   const roleId = parseInt(localStorage.getItem('role_id'));
 

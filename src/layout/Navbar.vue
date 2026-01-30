@@ -38,9 +38,6 @@
           <el-dropdown-menu class="premium-dropdown">
             <el-dropdown-item :icon="User" @click="router.push('/profile')">Profile</el-dropdown-item>
             <el-dropdown-item :icon="Setting" @click="router.push('/setting')">System Settings</el-dropdown-item>
-            <el-dropdown-item divided :icon="SwitchButton" @click="handleLogout" class="logout-link">
-              Logout
-            </el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -62,12 +59,6 @@ const authStore = useAuthStore()
 
 
 const currentRouteName = computed(() => route.meta.title || 'Overview')
-
-const handleLogout = () => {
-  localStorage.removeItem('token')
-  ElMessage.success('Logged out successfully')
-  router.push('/login')
-}
 </script>
 <style lang="scss" scoped>
 $text-main: #0f172a;
