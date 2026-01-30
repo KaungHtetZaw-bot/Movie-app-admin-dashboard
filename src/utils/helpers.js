@@ -21,3 +21,15 @@ export const formatNumber = (num) => {
   if (num === undefined || num === null) return '0'
   return new Intl.NumberFormat().format(num)
 }
+
+export const getAccessLabel = (user) => {
+  if (user.role_id === 2) return 'Admin';
+  if (user.is_vip) return 'VIP Member';
+  return 'Regular';
+};
+
+export const getAccessClass = (user) => {
+  if (user.role_id === 2) return 'admin';
+  if (user.is_vip) return 'vip';
+  return 'standard';
+};

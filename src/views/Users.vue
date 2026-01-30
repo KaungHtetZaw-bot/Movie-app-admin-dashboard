@@ -98,27 +98,13 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue';
-import { Search, StarFilled, MoreFilled, User, Edit, Delete, Filter,Close } from '@element-plus/icons-vue';
+import { Search, StarFilled, MoreFilled, User, Delete, Filter } from '@element-plus/icons-vue';
 import http from '@/api/http';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { formatDate } from '@/utils/helpers';
+import { formatDate,getAccessClass,getAccessLabel } from '@/utils/helpers';
 
 const state = ref({ users: [], isLoading: false });
 const searchQuery = ref('');
-
-
-// Access Level Helpers
-const getAccessLabel = (user) => {
-  if (user.role_id === 2) return 'VIP Admin';
-  if (user.is_vip) return 'VIP Member';
-  return 'Regular';
-};
-
-const getAccessClass = (user) => {
-  if (user.role_id === 2) return 'admin';
-  if (user.is_vip) return 'vip';
-  return 'standard';
-};
 
 const fetchData = async () => {
   state.value.isLoading = true;
@@ -144,7 +130,10 @@ const handleDelete = (id) => {
     confirmButtonText: 'Revoke Access',
     confirmButtonClass: 'el-button--danger',
     cancelButtonText: 'Cancel',
-    type: 'warning'
+    type: 'warning',
+    customClass: 'premium-logout-box',
+    center: true,
+    showClose: false,
   }).then(async () => {
     await http.delete(`/users/${id}`);
     ElMessage.success('User has been removed from the directory');

@@ -46,6 +46,12 @@
           </template>
         </el-table-column>
 
+        <el-table-column label="Last Modified" width="180">
+          <template #default="scope">
+            <span class="text-muted">{{ formatDate(scope.row.updated_at) }}</span>
+          </template>
+        </el-table-column>
+
         <el-table-column label="Management" width="120" align="right">
           <template #default="scope">
             <div class="action-trigger">
@@ -111,6 +117,7 @@ import { ref, onMounted, reactive } from 'vue'
 import { Plus, Edit, Delete, Medal, Files, MoreFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/api/http'
+import { formatDate } from '@/utils/helpers'
 
 const plans = ref([])
 const loading = ref(false)
@@ -132,11 +139,12 @@ const fetchPlans = async () => {
 
 // 1. Logic for naming classes (Fixes the Error)
 const getTierClass = (name) => {
-  if (!name) return ''
+  if (!name) return 'basic'
   const n = name.toLowerCase()
-  if (n.includes('gold')) return 'gold'
+
   if (n.includes('premium')) return 'premium'
-  return ''
+  if (n.includes('standard')) return 'gold'
+  return 'basic'
 }
 
 // 2. Logic for duration colors
@@ -267,20 +275,51 @@ $ease: cubic-bezier(0.25, 1, 0.5, 1);
         align-items: center;
         justify-content: center;
         font-size: 18px;
-        &.gold { background: #fef3c7; color: #92400e; }
+        &.gold { 
+          background: #fef3c7; 
+          color: #92400e; 
+        }
+        &.premium {
+          background: #e0e7ff;
+          color: #4338ca;
+          border: 1px solid #c7d2fe;
+          box-shadow: 0 4px 10px rgba(67, 56, 202, 0.1);
+        }
+        &.basic {
+          background: #f1f5f9;
+          color: #475569;
+        }
       }
 
       .tier-details {
         display: flex;
         flex-direction: column;
-        .tier-name { font-weight: 700; color: $text-main; font-size: 15px; }
-        .tier-id { font-size: 11px; color: #94a3b8; font-family: monospace; }
+        .tier-name { 
+          font-weight: 700; 
+          color: $text-main; 
+          font-size: 15px; 
+        }
+        .tier-id { 
+          font-size: 11px; 
+          color: #94a3b8; 
+          font-family: monospace; 
+        }
       }
     }
 
     .premium-price {
-      .currency { font-size: 12px; font-weight: 600; color: $text-muted; margin-right: 4px; }
-      .amount { font-size: 18px; font-weight: 800; color: $text-main; letter-spacing: -0.5px; }
+      .currency { 
+        font-size: 12px; 
+        font-weight: 600; 
+        color: $text-muted; 
+        margin-right: 4px; 
+      }
+      .amount { 
+        font-size: 18px; 
+        font-weight: 800; 
+        color: $text-main; 
+        letter-spacing: -0.5px; 
+      }
     }
 
     .duration-pill {
@@ -294,9 +333,26 @@ $ease: cubic-bezier(0.25, 1, 0.5, 1);
       background: #f1f5f9;
       color: $text-muted;
       
-      .dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; }
-      &.success { background: #ecfdf5; color: #065f46; .dot { background: #10b981; } }
-      &.warning { background: #fffbeb; color: #92400e; .dot { background: #f59e0b; } }
+      .dot { 
+        width: 6px; 
+        height: 6px; 
+        border-radius: 50%; 
+        background: #cbd5e1; 
+      }
+      &.success { 
+        background: #ecfdf5; 
+        color: #065f46; 
+        .dot { 
+          background: #10b981; 
+        } 
+      }
+      &.warning { 
+        background: #fffbeb; 
+        color: #92400e; 
+        .dot { 
+          background: #f59e0b; 
+        } 
+      }
     }
   }
   .action-trigger{
