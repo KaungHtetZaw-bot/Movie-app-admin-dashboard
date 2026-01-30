@@ -96,10 +96,15 @@ export const useAdminStore = defineStore('admin', {
         await http.patch(`/purchases/${id}`, { status })
         const index = this.purchases.findIndex(p => p.id === id)
         if (index !== -1) this.purchases[index].status = status
-        ElMessage.success(`Request ${status}`)
+        ElMessage({
+          message: `Transaction ${status} successfully`,
+          type: status === 'approved' ? 'success' : 'info',
+          plain: true
+        });
       } catch (error) {
-        ElMessage.error("Update failed")
+        ElMessage.error(error.response?.data?.message || "Status update failed");
       }
     }
+    
   }
 })

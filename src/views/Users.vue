@@ -15,6 +15,7 @@
     </header>
 
     <div class="table-container">
+      
       <div class="table-toolbar">
         <el-input
           v-model="searchQuery"
@@ -32,7 +33,7 @@
         </div>
       </div>
 
-      <el-table :data="filteredUsers" v-loading="adminStore.loadStates.users" class="premium-table">
+      <el-table :data="paginatedUsers" v-loading="adminStore.loadStates.users" class="premium-table">
         <el-table-column label="Member" min-width="260">
           <template #default="scope">
             <div class="user-profile">
@@ -92,6 +93,25 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-table :data="paginatedUsers" v-loading="adminStore.loadStates.users" class="premium-table">
+      </el-table>
+
+      <div class="table-footer">
+        <div class="pagination-info">
+          Showing {{ (currentPage - 1) * pageSize + 1 }} to 
+          {{ Math.min(currentPage * pageSize, searchedUsers.length) }} of 
+          {{ searchedUsers.length }} members
+        </div>
+        
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :total="searchedUsers.length"
+          :page-sizes="[10, 20, 50]"
+          layout="prev, pager, next"
+          class="premium-pagination"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -107,13 +127,27 @@ import { useAdminStore } from '@/store/admin';
 const adminStore = useAdminStore()
 const users = computed(() => adminStore.users)
 const searchQuery = ref('');
+const currentPage = ref(1);
+const pageSize = ref(10);
 
-const filteredUsers = computed(() => {
+const searchedUsers = computed(() => {
   const query = searchQuery.value.toLowerCase();
   return users.value.filter(u => 
-    u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query)
+    u.name?.toLowerCase().includes(query) || 
+    u.email?.toLowerCase().includes(query) ||
+    String(u.id).includes(query)
   );
 });
+
+const paginatedUsers = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return searchedUsers.value.slice(start, end);
+});
+
+const handleSearch = () => {
+  currentPage.value = 1;
+};
 
 const handleDelete = (id) => {
   ElMessageBox.confirm('This action will permanently revoke user access. Continue?', 'Archive User', {
@@ -202,6 +236,11 @@ $ease: cubic-bezier(0.25, 1, 0.5, 1);
 
   /* TABLE AREA */
   .table-container {
+    height: calc(100vh - 240px); 
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     background: white;
     border-radius: 24px;
     border: 1px solid rgba(0,0,0,0.04);

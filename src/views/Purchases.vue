@@ -99,22 +99,48 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div class="table-footer">
+        <div class="pagination-info">
+          Showing {{ paginatedPurchases.length }} transactions
+        </div>
+        
+        <el-pagination
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="filteredPurchases.length"
+          layout="prev, pager, next"
+          class="premium-pagination"
+        />
+      </div>
     </div>
   </div>
 </template>
 <script setup>
 import { Check, CircleCheckFilled, Close, Picture } from '@element-plus/icons-vue'
 import { useAdminStore } from '@/store/admin'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { getImageUrl } from '@/utils/helpers'
 
 const adminStore = useAdminStore()
 const activeTab = ref('all')
+const currentPage = ref(1);
+const pageSize = ref(10);
+
+const paginatedPurchases = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return filteredPurchases.value.slice(start, end);
+});
 
 const filteredPurchases = computed(() => {
   if (activeTab.value === 'all') return adminStore.mixedPurchases
   return adminStore.mixedPurchases.filter(p => p.status === activeTab.value)
 })
+
+watch(activeTab, () => {
+  currentPage.value = 1;
+});
 
 const getStatusType = (status) => {
   const map = { pending: 'warning', approved: 'success', rejected: 'danger' }
@@ -194,6 +220,12 @@ $ease: cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   .table-container {
+    height: calc(100vh - 300px); 
+    min-height: 400px;
+    display: flex;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     background: white;
     border-radius: 24px;
     border: 1px solid rgba(0,0,0,0.04);

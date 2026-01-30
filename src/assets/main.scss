@@ -1,5 +1,8 @@
 /* src/assets/main.scss */
-
+$text-main: #0f172a;
+$text-muted: #64748b;
+$accent: #1e293b;
+$ease: cubic-bezier(0.25, 1, 0.5, 1);
 :root {
   --primary-slate: #0f172a;
   --secondary-slate: #64748b;
@@ -95,3 +98,45 @@ h1, h2, h3, h4, .logo-text {
 }
 
 //////////////////////
+
+.table-footer {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+  background: #fcfcfd;
+
+  .pagination-info {
+    font-size: 13px;
+    color: $text-muted;
+    font-weight: 500;
+  }
+}
+
+:deep(.premium-pagination) {
+  .el-pager li {
+    background: transparent;
+    color: $text-muted;
+    font-weight: 600;
+    border-radius: 8px;
+    margin: 0 2px;
+    min-width: 32px;
+    
+    &.is-active {
+      background: $text-main !important;
+      color: white !important;
+    }
+    
+    &:hover:not(.is-active) {
+      color: #3b82f6;
+      background: #eff6ff;
+    }
+  }
+
+  button {
+    background: transparent !important;
+    &:disabled { background: transparent !important; }
+    &:hover { color: #3b82f6 !important; }
+  }
+}
