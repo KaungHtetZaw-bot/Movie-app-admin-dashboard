@@ -33,3 +33,8 @@ export const getAccessClass = (user) => {
   if (user.is_vip) return 'vip';
   return 'standard';
 };
+
+export const getStatusType = (status) => {
+  const map = { pending: 'warning', approved: 'success', rejected: 'danger' }
+  return map[status] || 'info'
+}

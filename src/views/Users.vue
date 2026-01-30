@@ -9,7 +9,7 @@
       <div class="header-stats">
         <div class="stat-badge">
           <span class="dot"></span>
-          {{ state.users.length }} Active Members
+          {{ users.length }} Active Members
         </div>
       </div>
     </header>
@@ -32,7 +32,7 @@
         </div>
       </div>
 
-      <el-table :data="filteredUsers" v-loading="state.isLoading" class="premium-table">
+      <el-table :data="filteredUsers" v-loading="adminStore.loadStates.users" class="premium-table">
         <el-table-column label="Member" min-width="260">
           <template #default="scope">
             <div class="user-profile">
@@ -102,25 +102,15 @@ import { Search, StarFilled, MoreFilled, User, Delete, Filter } from '@element-p
 import http from '@/api/http';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { formatDate,getAccessClass,getAccessLabel } from '@/utils/helpers';
+import { useAdminStore } from '@/store/admin';
 
-const state = ref({ users: [], isLoading: false });
+const adminStore = useAdminStore()
+const users = computed(() => adminStore.users)
 const searchQuery = ref('');
-
-const fetchData = async () => {
-  state.value.isLoading = true;
-  try {
-    const res = await http.get('/users');
-    state.value.users = Array.isArray(res.data) ? res.data : (res.data.data || []);
-  } catch (error) {
-    ElMessage.error("Connection lost. Failed to fetch user data.");
-  } finally {
-    state.value.isLoading = false;
-  }
-};
 
 const filteredUsers = computed(() => {
   const query = searchQuery.value.toLowerCase();
-  return state.value.users.filter(u => 
+  return users.value.filter(u => 
     u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query)
   );
 });
@@ -137,7 +127,7 @@ const handleDelete = (id) => {
   }).then(async () => {
     await http.delete(`/users/${id}`);
     ElMessage.success('User has been removed from the directory');
-    fetchData();
+    adminStore.fetchUsers();
   });
 };
 
@@ -157,14 +147,14 @@ const handleRoleChange = async (user, newRoleId) => {
   try {
     const res = await http.patch(`/users/${user.id}/change-profile`, { role_id: newRoleId });
     ElMessage.success(res?.message || 'Member profile updated successfully');
-    fetchData();
+    adminStore.fetchUsers();
   } catch (error) {
     console.error(error.message);
     ElMessage.error(error.message || "Update failed. Please check your connection.");
   }
 };
 
-onMounted(fetchData);
+onMounted(()=>adminStore.fetchUsers());
 </script>
 
 <style lang="scss" scoped>

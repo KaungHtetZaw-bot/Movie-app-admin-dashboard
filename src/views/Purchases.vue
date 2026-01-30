@@ -103,7 +103,7 @@
   </div>
 </template>
 <script setup>
-import { Check, Close, Picture } from '@element-plus/icons-vue'
+import { Check, CircleCheckFilled, Close, Picture } from '@element-plus/icons-vue'
 import { useAdminStore } from '@/store/admin'
 import { computed, onMounted, ref } from 'vue'
 import { getImageUrl } from '@/utils/helpers'

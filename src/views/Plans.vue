@@ -12,7 +12,7 @@
     </header>
 
     <div class="table-container">
-      <el-table :data="plans" v-loading="loading" class="premium-table">
+      <el-table :data="plans" v-loading="adminStore.loadStates.plans" class="premium-table">
         <el-table-column label="Subscription Tier" min-width="240">
           <template #default="scope">
             <div class="plan-identity">
@@ -113,29 +113,20 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { Plus, Edit, Delete, Medal, Files, MoreFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/api/http'
-import { formatDate } from '@/utils/helpers'
+import { formatDate,formatNumber } from '@/utils/helpers'
+import { useAdminStore } from '@/store/admin'
 
-const plans = ref([])
-const loading = ref(false)
+const adminStore = useAdminStore()
+const plans = computed(() => adminStore.plans)
 const submitting = ref(false)
 const dialogVisible = ref(false)
 const editMode = ref(false)
 
 const form = reactive({ id: null, name: '', amount: 0, day: 1 })
-
-const fetchPlans = async () => {
-  loading.value = true
-  try {
-    const res = await http.get('/plans')
-    plans.value = res.data.data || res.data
-  } finally {
-    loading.value = false
-  }
-}
 
 // 1. Logic for naming classes (Fixes the Error)
 const getTierClass = (name) => {
@@ -154,7 +145,6 @@ const getDurationTag = (days) => {
   return ''
 }
 
-const formatNumber = (val) => new Intl.NumberFormat().format(val)
 
 const openDialog = (data = null) => {
   if (data) {
@@ -170,15 +160,27 @@ const openDialog = (data = null) => {
 const submitForm = async () => {
   submitting.value = true
   try {
-    if (editMode.value) {
-      await http.patch(`/plans/${form.id}`, form)
-      ElMessage.success('Plan updated')
-    } else {
-      await http.post('/plans', form)
-      ElMessage.success('Plan created')
+    const payload = {
+      name: form.name,
+      amount: form.amount,
+      month: form.day
     }
+
+    if (editMode.value) {
+      await http.patch(`/plans/${form.id}`, payload)
+      ElMessage.success('Plan updated successfully')
+    } else {
+      await http.post('/plans', payload)
+      ElMessage.success('New plan launched')
+    }
+
     dialogVisible.value = false
-    fetchPlans()
+    await adminStore.fetchPlans()
+    
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || 'Something went wrong. Please try again.'
+    ElMessage.error(errorMessage)
+    console.error('Submission Error:', error)
   } finally {
     submitting.value = false
   }
@@ -187,15 +189,20 @@ const submitForm = async () => {
 const handleDelete = (id) => {
   ElMessageBox.confirm('Archive this plan?', 'Warning', {
     confirmButtonText: 'Archive',
-    type: 'warning'
+    type: 'warning',
+    customClass: 'premium-logout-box',
+    center: true,
+    showClose: false,
   }).then(async () => {
     await http.delete(`/plans/${id}`)
     ElMessage.success('Plan archived')
-    fetchPlans()
+    adminStore.fetchPlans()
   })
 }
 
-onMounted(fetchPlans)
+onMounted(async()=>{
+  adminStore.fetchPlans()
+})
 </script>
 <style lang="scss" scoped>
 $text-main: #0f172a;

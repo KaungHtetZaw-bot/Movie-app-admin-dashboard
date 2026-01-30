@@ -47,7 +47,7 @@
               <span class="account-label">Destination Account</span>
               <div class="account-number-wrapper">
                 <code>{{ item.number }}</code>
-                <el-icon class="copy-icon"><DocumentCopy /></el-icon>
+                <el-icon class="copy-icon" @click="copy(item.number)"><DocumentCopy /></el-icon>
               </div>
             </div>
           </div>
@@ -95,7 +95,7 @@
 </template>
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import { Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, DocumentCopy } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/api/http'
 
@@ -131,6 +131,45 @@ const openDialog = (item = null) => {
   dialogVisible.value = true
 }
 
+const copy = async (text) => {
+  if (!text) return;
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess();
+      return;
+    } catch (err) {
+      console.error("Clipboard API failed", err);
+    }
+  }
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.left = "-9999px";
+  textArea.style.top = "0";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) showSuccess();
+  } catch (err) {
+    ElMessage.error("Unable to copy");
+  }
+
+  document.body.removeChild(textArea);
+};
+
+const showSuccess = () => {
+  ElMessage({
+    message: 'Copied to clipboard',
+    type: 'success',
+    plain: true,
+    customClass: 'premium-mini-message'
+  });
+};
+
 const submitForm = async () => {
   submitting.value = true
   try {
@@ -152,7 +191,10 @@ const handleDelete = (id) => {
   ElMessageBox.confirm('Permanent delete this gateway?', 'Warning', {
     confirmButtonText: 'Delete',
     cancelButtonText: 'Cancel',
-    type: 'warning'
+    type: 'warning',
+    customClass: 'premium-logout-box',
+    center: true,
+    showClose: false,
   }).then(async () => {
     await http.delete(`/payments/${id}`)
     ElMessage.success('Deleted')

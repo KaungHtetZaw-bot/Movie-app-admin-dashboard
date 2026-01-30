@@ -9,6 +9,11 @@ export const useAdminStore = defineStore('admin', {
     plans: [],
     purchases: [],
     isLoading: false,
+    loadStates: {
+      users: false,
+      purchases: false,
+      plans: false
+    }
   }),
 
   getters: {
@@ -40,20 +45,47 @@ export const useAdminStore = defineStore('admin', {
   actions: {
     toggleSidebar() {
       this.isSidebarCollapsed = !this.isSidebarCollapsed
-      console.log(this.isSidebarCollapsed)
+    },
+
+    async fetchUsers() {
+      this.loadStates.users = true;
+      try {
+        const res = await http.get('/users');
+        this.users = res.data;
+      } finally {
+        this.loadStates.users = false;
+      }
+    },
+
+    async fetchPurchases() {
+      this.loadStates.purchases = true;
+      try {
+        const res = await http.get('/purchases');
+        this.purchases = res.data;
+      } finally {
+        this.loadStates.purchases = false;
+      }
+    },
+
+    async fetchPlans() {
+      this.loadStates.plans = true;
+      try {
+        const res = await http.get('/plans');
+        this.plans = res.data;
+      } finally {
+        this.loadStates.plans = false;
+      }
     },
     async fetchAllData() {
       this.isLoading = true
       try {
-        const [uRes, pRes, plRes] = await Promise.all([
-          http.get('/users'),
-          http.get('/purchases'),
-          http.get('/plans')
+       await Promise.all([
+          this.fetchUsers(),
+          this.fetchPurchases(),
+          this.fetchPlans()
         ])
-        this.users = uRes.data
-        this.purchases = pRes.data
-        this.plans = plRes.data
       } catch (error) {
+        console.log(error)
         ElMessage.error("Data sync failed")
       } finally {
         this.isLoading = false
