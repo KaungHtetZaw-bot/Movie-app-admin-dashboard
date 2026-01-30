@@ -4,23 +4,13 @@ import http from "@/api/http";
 
 export const useAuthStore = defineStore('authUser', {
     state: () => ({
-        user: {},
+        user: JSON.parse(localStorage.getItem('user')) || {},
         isLoading: false,
         isLoadingProfile:false,
         token: localStorage.getItem('token') || null,
     }),
     getters: {
-     formatDate: (state) =>{
-        return (dateValue) => {
-            if (!dateValue) return 'N/A';
-            const date = new Date(dateValue);
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            }
-        }
+     
     },
     actions: {
         async fetchProfile() {
@@ -28,11 +18,9 @@ export const useAuthStore = defineStore('authUser', {
             try {
                 this.isLoadingProfile = true
                 const res = await http.get('/profile');
+                localStorage.setItem('user', JSON.stringify(res.user));
                 this.user = res.user;
             } catch (err) {
-                ElMessage({
-                    message:"something was wrong!!"
-                })
                 this.logout();
             } finally{
                 this.isLoadingProfile = false
@@ -50,24 +38,27 @@ export const useAuthStore = defineStore('authUser', {
                     })
                     return
                 }
-                localStorage.setItem('token',res.token)
-                this.token = res?.token
-                this.user = res?.user
+                this.token = res.access_token;
+                this.user = res.user;
+                
+                localStorage.setItem('token', res.access_token);
+                localStorage.setItem('user', JSON.stringify(res.user));
+                ElMessage.success('Welcome back!');
                 router.push('/dashboard')
             }catch (err){
-                ElMessage({
-                    message: 'Login failed. Please try again.',
-                    type: 'error',
-                })
+                ElMessage.error(err.response?.data?.error || 'Login failed. Please try again.')
             }finally {
                 this.isLoading = false
             }
         },
 
         logout() {
-        this.user = {};
-        this.token = null;
-        localStorage.removeItem('token');
+            this.user = {};
+            this.token = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            // Using window.location forces a clean state reload
+            window.location.href = '/login';
     }
     }
 })
